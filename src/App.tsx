@@ -38,8 +38,6 @@ import {
 } from "lucide-react";
 import { STATIONS, VEHICLE_TYPES, FAQS, CITIES, TIME_SLOTS } from "./data";
 import { Station, Appointment } from "./types";
-import { db, ref } from "./firebase";
-import { onValue, set as dbSet } from "firebase/database";
 
 export default function App() {
   // Localization State - Arabic default
@@ -83,64 +81,79 @@ export default function App() {
 
   // Realtime Database Link and Contact Info Synchronization
   useEffect(() => {
-    const configRef = ref(db, "config");
-    
-    // Listening to changes from Firebase Realtime Database
-    const unsubscribe = onValue(configRef, (snapshot) => {
-      const dbValue = snapshot.val();
-      if (dbValue && typeof dbValue === "object") {
-        // Handle bookingUrl
-        if (dbValue.bookingUrl && typeof dbValue.bookingUrl === "string" && dbValue.bookingUrl.trim() !== "") {
-          setIframeUrl(dbValue.bookingUrl);
-          setTempIframeUrl(dbValue.bookingUrl);
-        } else if (dbValue.bookingUrl === "") {
-          setIframeUrl(FALLBACK_URL);
-          setTempIframeUrl(FALLBACK_URL);
-        } else {
-          // Compatibility with legacy single field database format
-          const legacyUrl = typeof dbValue === "string" ? dbValue : (dbValue.bookingUrl || FALLBACK_URL);
-          setIframeUrl(legacyUrl);
-          setTempIframeUrl(legacyUrl);
-        }
+    let unsubscribe: (() => void) | undefined;
 
-        // Handle phone string
-        if (dbValue.phone && typeof dbValue.phone === "string" && dbValue.phone.trim() !== "") {
-          setPhone(dbValue.phone);
-          setTempPhone(dbValue.phone);
-        } else {
-          setPhone(FALLBACK_PHONE);
-          setTempPhone(FALLBACK_PHONE);
-        }
+    const loadAndSyncFirebase = async () => {
+      try {
+        const { db, ref } = await import("./firebase");
+        const { onValue } = await import("firebase/database");
 
-        // Handle email string
-        if (dbValue.email && typeof dbValue.email === "string" && dbValue.email.trim() !== "") {
-          setEmail(dbValue.email);
-          setTempEmail(dbValue.email);
-        } else {
-          setEmail(FALLBACK_EMAIL);
-          setTempEmail(FALLBACK_EMAIL);
-        }
-      } else if (dbValue && typeof dbValue === "string") {
-        // Compatibility for legacy databases containing only raw string
-        setIframeUrl(dbValue);
-        setTempIframeUrl(dbValue);
-        setPhone(FALLBACK_PHONE);
-        setTempPhone(FALLBACK_PHONE);
-        setEmail(FALLBACK_EMAIL);
-        setTempEmail(FALLBACK_EMAIL);
-      } else {
-        setIframeUrl(FALLBACK_URL);
-        setTempIframeUrl(FALLBACK_URL);
-        setPhone(FALLBACK_PHONE);
-        setTempPhone(FALLBACK_PHONE);
-        setEmail(FALLBACK_EMAIL);
-        setTempEmail(FALLBACK_EMAIL);
+        const configRef = ref(db, "config");
+        
+        // Listening to changes from Firebase Realtime Database
+        unsubscribe = onValue(configRef, (snapshot) => {
+          const dbValue = snapshot.val();
+          if (dbValue && typeof dbValue === "object") {
+            // Handle bookingUrl
+            if (dbValue.bookingUrl && typeof dbValue.bookingUrl === "string" && dbValue.bookingUrl.trim() !== "") {
+              setIframeUrl(dbValue.bookingUrl);
+              setTempIframeUrl(dbValue.bookingUrl);
+            } else if (dbValue.bookingUrl === "") {
+              setIframeUrl(FALLBACK_URL);
+              setTempIframeUrl(FALLBACK_URL);
+            } else {
+              // Compatibility with legacy single field database format
+              const legacyUrl = typeof dbValue === "string" ? dbValue : (dbValue.bookingUrl || FALLBACK_URL);
+              setIframeUrl(legacyUrl);
+              setTempIframeUrl(legacyUrl);
+            }
+
+            // Handle phone string
+            if (dbValue.phone && typeof dbValue.phone === "string" && dbValue.phone.trim() !== "") {
+              setPhone(dbValue.phone);
+              setTempPhone(dbValue.phone);
+            } else {
+              setPhone(FALLBACK_PHONE);
+              setTempPhone(FALLBACK_PHONE);
+            }
+
+            // Handle email string
+            if (dbValue.email && typeof dbValue.email === "string" && dbValue.email.trim() !== "") {
+              setEmail(dbValue.email);
+              setTempEmail(dbValue.email);
+            } else {
+              setEmail(FALLBACK_EMAIL);
+              setTempEmail(FALLBACK_EMAIL);
+            }
+          } else if (dbValue && typeof dbValue === "string") {
+            // Compatibility for legacy databases containing only raw string
+            setIframeUrl(dbValue);
+            setTempIframeUrl(dbValue);
+            setPhone(FALLBACK_PHONE);
+            setTempPhone(FALLBACK_PHONE);
+            setEmail(FALLBACK_EMAIL);
+            setTempEmail(FALLBACK_EMAIL);
+          } else {
+            setIframeUrl(FALLBACK_URL);
+            setTempIframeUrl(FALLBACK_URL);
+            setPhone(FALLBACK_PHONE);
+            setTempPhone(FALLBACK_PHONE);
+            setEmail(FALLBACK_EMAIL);
+            setTempEmail(FALLBACK_EMAIL);
+          }
+        }, (error) => {
+          console.error("Error reading from Firebase:", error);
+        });
+      } catch (err) {
+        console.error("Failed to dynamically load Firebase:", err);
       }
-    }, (error) => {
-      console.error("Error reading from Firebase:", error);
-    });
+    };
 
-    return () => unsubscribe();
+    loadAndSyncFirebase();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   // Handle Admin query detection and password entry with the requested password "101010"
@@ -181,6 +194,9 @@ export default function App() {
   const applyCustomIframe = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const { db, ref } = await import("./firebase");
+      const { set: dbSet } = await import("firebase/database");
+
       const configRef = ref(db, "config");
       await dbSet(configRef, {
         bookingUrl: tempIframeUrl,
@@ -198,6 +214,9 @@ export default function App() {
   const handlePresetSelect = async (url: string) => {
     setTempIframeUrl(url);
     try {
+      const { db, ref } = await import("./firebase");
+      const { set: dbSet } = await import("firebase/database");
+
       const configRef = ref(db, "config");
       await dbSet(configRef, {
         bookingUrl: url,
@@ -397,7 +416,7 @@ export default function App() {
           </div>
           <div className="text-slate-450 font-bold flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-[#1E7D4E]/80" />
-            <span>{lang === "ar" ? "وزارة النقل والخدمات اللوجستية - بوابة الفحص" : "Ministry of Transport & Logistics - Inspection Portal"}</span>
+            <span>{lang === "ar" ? "المنصة الموحدة لخدمات الفحص الفني - بوابة حجز مواعيد الفحص الدوري" : "Unified Technical Inspection Portal - Booking & Registration"}</span>
           </div>
         </div>
       </div>
