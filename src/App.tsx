@@ -49,7 +49,7 @@ export default function App() {
   // Fallback default details in case Firebase is empty or unset
   const FALLBACK_URL = "https://example.com";
   const FALLBACK_PHONE = "+966 11 123 4567";
-  const FALLBACK_EMAIL = "support@vehiclesafety.gov.sa";
+  const FALLBACK_EMAIL = "info@salameh-inspection.com";
 
   // Iframe URL and contact info managers aligned with Firebase state
   const [iframeUrl, setIframeUrl] = useState<string>(FALLBACK_URL);
@@ -700,7 +700,7 @@ export default function App() {
                           icon={<Mail className="w-4 h-4 text-slate-400" />}
                           value={tempEmail}
                           onChange={(e) => setTempEmail(e.target.value)}
-                          placeholder="support@vehiclesafety.gov.sa"
+                          placeholder="info@salameh-inspection.com"
                           dir="ltr"
                           className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-xs sm:text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
                         />
@@ -968,7 +968,7 @@ export default function App() {
       {/* Simple Custom Quiet Footer */}
       <footer className="bg-gray-50 border-t border-slate-200/60 py-6 px-4 text-center text-xs text-gray-400 font-sans" dir="rtl">
         <div className="max-w-4xl mx-auto leading-relaxed space-y-2">
-          <p>جميع الحقوق محفوظة لمركز سلامة © 2024. المنصة عبارة عن بوابة تقنية مستقلة تهدف لتسهيل وصول المستخدمين لخدمات الحجز، وهي غير تابعة لأي جهة حكومية أو لشركة جوجل.</p>
+          <p>جميع الحقوق محفوظة لمركز سلامة © 2024. المنصة عبارة عن بوابة تقنية مستقلة تعمل كطرف وسيط لتسهيل وصول المستخدمين لخدمات حجز المواعيد عبر الأنظمة المتاحة. نحن نقدم خدمة تنظيم وتنسيق تقني فقط، ولسنا جهة حكومية رسمية ولا نتبع لشركة جوجل. باستخدامك للمنصة، أنت تقر بعلمك بأننا مزود خدمة مستقل.</p>
           <p className="text-[11px] text-slate-450 font-mono flex flex-wrap items-center justify-center gap-4" dir="ltr">
             <span>Phone: <a href={`tel:${phone}`} className="hover:text-[#1E7D4E] transition-colors">{phone}</a></span>
             <span>|</span>
