@@ -1,0 +1,6 @@
+{
+  "name": "Vehicle Safety Center",
+  "description": "المنصة الموحدة للفحص الفني الدوري للمركبات - مركز سلامة المركبات",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
