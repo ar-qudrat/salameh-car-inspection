@@ -37,6 +37,8 @@ import {
 } from "lucide-react";
 import { STATIONS, VEHICLE_TYPES, FAQS, CITIES, TIME_SLOTS } from "./data";
 import { Station, Appointment } from "./types";
+import { db, ref } from "./firebase";
+import { onValue, set as dbSet } from "firebase/database";
 
 export default function App() {
   // Localization State - Arabic default
@@ -45,25 +47,12 @@ export default function App() {
   // Admin Portal state
   const [hasAdminAccess, setHasAdminAccess] = useState<boolean>(false);
 
-  // Iframe URL manager
-  const [iframeUrl, setIframeUrl] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const savedUrl = localStorage.getItem("vehicle_safety_center_iframe_url");
-      if (savedUrl) {
-        return savedUrl;
-      }
-    }
-    return "https://example.com";
-  });
-  const [tempIframeUrl, setTempIframeUrl] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const savedUrl = localStorage.getItem("vehicle_safety_center_iframe_url");
-      if (savedUrl) {
-        return savedUrl;
-      }
-    }
-    return "https://example.com";
-  });
+  // Fallback default URL in case Firebase is empty or unset
+  const FALLBACK_URL = "https://example.com";
+
+  // Iframe URL managers aligned with Firebase state
+  const [iframeUrl, setIframeUrl] = useState<string>(FALLBACK_URL);
+  const [tempIframeUrl, setTempIframeUrl] = useState<string>(FALLBACK_URL);
   const [deviceFrame, setDeviceFrame] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
@@ -83,7 +72,28 @@ export default function App() {
     bookingRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Handle Admin query detection and password entry
+  // Realtime Database Link Synchronization
+  useEffect(() => {
+    const bookingUrlRef = ref(db, "config/bookingUrl");
+    
+    // Listening to changes from Firebase Realtime Database
+    const unsubscribe = onValue(bookingUrlRef, (snapshot) => {
+      const dbValue = snapshot.val();
+      if (dbValue && typeof dbValue === "string" && dbValue.trim() !== "") {
+        setIframeUrl(dbValue);
+        setTempIframeUrl(dbValue);
+      } else {
+        setIframeUrl(FALLBACK_URL);
+        setTempIframeUrl(FALLBACK_URL);
+      }
+    }, (error) => {
+      console.error("Error reading from Firebase:", error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Handle Admin query detection and password entry with the requested password "Salameh2024"
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -93,7 +103,7 @@ export default function App() {
             ? "الرجاء إدخال كلمة مرور مدير النظام (الأدمن):" 
             : "Please enter the admin password:"
         );
-        if (password === "101010") {
+        if (password === "Salameh2024") {
           setHasAdminAccess(true);
           setToastMessage(lang === "ar" ? "تم تسجيل الدخول كمدير للنظام بنجاح!" : "Logged into Admin portal successfully!");
           setTimeout(() => setToastMessage(""), 4000);
@@ -105,7 +115,7 @@ export default function App() {
         }
       }
     }
-  }, []);
+  }, [lang]);
 
   const handleCopyCode = () => {
     const embedCode = `<iframe src="${iframeUrl}" width="100%" height="600" style="border:none; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05);" allowfullscreen></iframe>`;
@@ -118,13 +128,29 @@ export default function App() {
     }, 3000);
   };
 
-  const applyCustomIframe = (e: React.FormEvent) => {
+  const applyCustomIframe = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIframeUrl(tempIframeUrl);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("vehicle_safety_center_iframe_url", tempIframeUrl);
+    try {
+      const bookingUrlRef = ref(db, "config/bookingUrl");
+      await dbSet(bookingUrlRef, tempIframeUrl);
+      setToastMessage(lang === "ar" ? "تم تحديث الرابط في قاعدة البيانات وقنوات الاتصال بنجاح!" : "Booking link successfully updated in Firebase Realtime Database!");
+    } catch (err) {
+      console.error("Firebase write error:", err);
+      setToastMessage(lang === "ar" ? "خطأ في الاتصال بقاعدة البيانات!" : "Error communicating with the database!");
     }
-    setToastMessage(lang === "ar" ? "تم حفظ الرابط وتحديث نظام الحجز بنجاح!" : "Booking system link synced and saved successfully!");
+    setTimeout(() => setToastMessage(""), 3000);
+  };
+
+  const handlePresetSelect = async (url: string) => {
+    setTempIframeUrl(url);
+    try {
+      const bookingUrlRef = ref(db, "config/bookingUrl");
+      await dbSet(bookingUrlRef, url);
+      setToastMessage(lang === "ar" ? "تم تحديث الرابط بنجاح!" : "Preset link applied successfully!");
+    } catch (err) {
+      console.error("Firebase preset write error:", err);
+      setToastMessage(lang === "ar" ? "خطأ في الاتصال بقاعدة البيانات!" : "Error communicating with the database!");
+    }
     setTimeout(() => setToastMessage(""), 3000);
   };
 
@@ -590,22 +616,22 @@ export default function App() {
                   <span className="text-slate-400 font-bold">{lang === "ar" ? "روابط سريعة للتجربة:" : "Test Links Preset:"}</span>
                   <button
                     type="button"
-                    onClick={() => { setTempIframeUrl("https://example.com"); setIframeUrl("https://example.com"); }}
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all"
+                    onClick={() => handlePresetSelect("https://example.com")}
+                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
                   >
                     Example.com (Default)
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setTempIframeUrl("https://wikipedia.org"); setIframeUrl("https://wikipedia.org"); }}
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all"
+                    onClick={() => handlePresetSelect("https://wikipedia.org")}
+                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
                   >
                     Wikipedia (Arabic page support)
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setTempIframeUrl("https://maps.google.com/maps?q=riyadh+mvpi&t=&z=13&ie=UTF8&iwloc=&output=embed"); setIframeUrl("https://maps.google.com/maps?q=riyadh+mvpi&t=&z=13&ie=UTF8&iwloc=&output=embed"); }}
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all"
+                    onClick={() => handlePresetSelect("https://maps.google.com/maps?q=riyadh+mvpi&t=&z=13&ie=UTF8&iwloc=&output=embed")}
+                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
                   >
                     {lang === "ar" ? "مواقع الفحص على خرائط جوجل" : "Inspection Stations on Google Maps"}
                   </button>
@@ -837,13 +863,15 @@ export default function App() {
 
           {/* Nav links to Compliance Terms & Privacy */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm font-semibold text-slate-400">
-            <button
-              onClick={() => setShowPrivacy(true)}
+            <a
+              href="privacy.html"
+              target="_blank"
+              rel="noopener noreferrer"
               className="hover:text-white transition-colors cursor-pointer flex items-center gap-1"
             >
               <FileText className="w-4 h-4 text-[#1E7D4E]" />
               <span>{currentText.privacyPolicy}</span>
-            </button>
+            </a>
             
             <button
               onClick={() => setShowTerms(true)}
