@@ -116,7 +116,7 @@ export const FAQS: FAQItem[] = [
     answerEn: "Private passenger cars and motorcycles must be inspected annually (every year) starting 3 years after their first licensing. Public transport and taxis must be inspected annually from the first year."
   },
   {
-    questionAr: "كيف يمكنني تفعيل حجز موعد عبر نظام الإرسال الخارجي (iFrame)؟",
+    questionAr: "كيف يمكنني تفعيل حجز موعد عبر نظام الإرسال الخارجي (النظام الإلكتروني)؟",
     questionEn: "How do I activate appointment booking via an external system (iFrame)?",
     answerAr: "توفر المنصة قسماً متكاملاً ومتحكماً بالكامل لعرض روابط الفحص المخصصة. يمكنك لصق رابط بوابة الحجز الخاصة بجهة الاتصال وتضمينها بشكل فوري.",
     answerEn: "The platform provides an integrated, controllable section to display custom booking links. You can paste your custom booking portal link and embed it instantly."

@@ -48,12 +48,19 @@ export default function App() {
   // Admin Portal state
   const [hasAdminAccess, setHasAdminAccess] = useState<boolean>(false);
 
-  // Fallback default URL in case Firebase is empty or unset
+  // Fallback default details in case Firebase is empty or unset
   const FALLBACK_URL = "https://example.com";
+  const FALLBACK_PHONE = "+966 11 123 4567";
+  const FALLBACK_EMAIL = "support@vehiclesafety.gov.sa";
 
-  // Iframe URL managers aligned with Firebase state
+  // Iframe URL and contact info managers aligned with Firebase state
   const [iframeUrl, setIframeUrl] = useState<string>(FALLBACK_URL);
   const [tempIframeUrl, setTempIframeUrl] = useState<string>(FALLBACK_URL);
+  const [phone, setPhone] = useState<string>(FALLBACK_PHONE);
+  const [tempPhone, setTempPhone] = useState<string>(FALLBACK_PHONE);
+  const [email, setEmail] = useState<string>(FALLBACK_EMAIL);
+  const [tempEmail, setTempEmail] = useState<string>(FALLBACK_EMAIL);
+
   const [deviceFrame, setDeviceFrame] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
@@ -74,19 +81,60 @@ export default function App() {
     bookingRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Realtime Database Link Synchronization
+  // Realtime Database Link and Contact Info Synchronization
   useEffect(() => {
-    const bookingUrlRef = ref(db, "config/bookingUrl");
+    const configRef = ref(db, "config");
     
     // Listening to changes from Firebase Realtime Database
-    const unsubscribe = onValue(bookingUrlRef, (snapshot) => {
+    const unsubscribe = onValue(configRef, (snapshot) => {
       const dbValue = snapshot.val();
-      if (dbValue && typeof dbValue === "string" && dbValue.trim() !== "") {
+      if (dbValue && typeof dbValue === "object") {
+        // Handle bookingUrl
+        if (dbValue.bookingUrl && typeof dbValue.bookingUrl === "string" && dbValue.bookingUrl.trim() !== "") {
+          setIframeUrl(dbValue.bookingUrl);
+          setTempIframeUrl(dbValue.bookingUrl);
+        } else if (dbValue.bookingUrl === "") {
+          setIframeUrl(FALLBACK_URL);
+          setTempIframeUrl(FALLBACK_URL);
+        } else {
+          // Compatibility with legacy single field database format
+          const legacyUrl = typeof dbValue === "string" ? dbValue : (dbValue.bookingUrl || FALLBACK_URL);
+          setIframeUrl(legacyUrl);
+          setTempIframeUrl(legacyUrl);
+        }
+
+        // Handle phone string
+        if (dbValue.phone && typeof dbValue.phone === "string" && dbValue.phone.trim() !== "") {
+          setPhone(dbValue.phone);
+          setTempPhone(dbValue.phone);
+        } else {
+          setPhone(FALLBACK_PHONE);
+          setTempPhone(FALLBACK_PHONE);
+        }
+
+        // Handle email string
+        if (dbValue.email && typeof dbValue.email === "string" && dbValue.email.trim() !== "") {
+          setEmail(dbValue.email);
+          setTempEmail(dbValue.email);
+        } else {
+          setEmail(FALLBACK_EMAIL);
+          setTempEmail(FALLBACK_EMAIL);
+        }
+      } else if (dbValue && typeof dbValue === "string") {
+        // Compatibility for legacy databases containing only raw string
         setIframeUrl(dbValue);
         setTempIframeUrl(dbValue);
+        setPhone(FALLBACK_PHONE);
+        setTempPhone(FALLBACK_PHONE);
+        setEmail(FALLBACK_EMAIL);
+        setTempEmail(FALLBACK_EMAIL);
       } else {
         setIframeUrl(FALLBACK_URL);
         setTempIframeUrl(FALLBACK_URL);
+        setPhone(FALLBACK_PHONE);
+        setTempPhone(FALLBACK_PHONE);
+        setEmail(FALLBACK_EMAIL);
+        setTempEmail(FALLBACK_EMAIL);
       }
     }, (error) => {
       console.error("Error reading from Firebase:", error);
@@ -133,9 +181,13 @@ export default function App() {
   const applyCustomIframe = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const bookingUrlRef = ref(db, "config/bookingUrl");
-      await dbSet(bookingUrlRef, tempIframeUrl);
-      setToastMessage(lang === "ar" ? "تم تحديث الرابط في قاعدة البيانات وقنوات الاتصال بنجاح!" : "Booking link successfully updated in Firebase Realtime Database!");
+      const configRef = ref(db, "config");
+      await dbSet(configRef, {
+        bookingUrl: tempIframeUrl,
+        phone: tempPhone,
+        email: tempEmail
+      });
+      setToastMessage(lang === "ar" ? "تم تحديث البيانات وقنوات التواصل في قاعدة البيانات الفورية بنجاح!" : "Booking link and contact info updated in database!");
     } catch (err) {
       console.error("Firebase write error:", err);
       setToastMessage(lang === "ar" ? "خطأ في الاتصال بقاعدة البيانات!" : "Error communicating with the database!");
@@ -146,8 +198,12 @@ export default function App() {
   const handlePresetSelect = async (url: string) => {
     setTempIframeUrl(url);
     try {
-      const bookingUrlRef = ref(db, "config/bookingUrl");
-      await dbSet(bookingUrlRef, url);
+      const configRef = ref(db, "config");
+      await dbSet(configRef, {
+        bookingUrl: url,
+        phone: phone,
+        email: email
+      });
       setToastMessage(lang === "ar" ? "تم تحديث الرابط بنجاح!" : "Preset link applied successfully!");
     } catch (err) {
       console.error("Firebase preset write error:", err);
@@ -326,6 +382,26 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Top bar with official phone and email contact info */}
+      <div className="bg-[#1E7D4E]/5 border-b border-[#1E7D4E]/10 text-slate-500 text-[10px] sm:text-xs py-2.5 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <span className="flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-[#1E7D4E]" />
+              <a href={`tel:${phone}`} className="font-mono hover:text-[#1E7D4E] transition-colors">{phone}</a>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-[#1E7D4E]" />
+              <a href={`mailto:${email}`} className="font-mono hover:text-[#1E7D4E] transition-colors">{email}</a>
+            </span>
+          </div>
+          <div className="text-slate-450 font-bold flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5 text-[#1E7D4E]/80" />
+            <span>{lang === "ar" ? "وزارة النقل والخدمات اللوجستية - بوابة الفحص" : "Ministry of Transport & Logistics - Inspection Portal"}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Header section with 90% accurate SVG Logo */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
@@ -404,14 +480,12 @@ export default function App() {
           </div>
 
           {/* Desktop Navigation Links */}
-          {hasAdminAccess && (
-            <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-650">
-              <a href="#" className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الرئيسية" : "Home"}</a>
-              <a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "عن المركز" : "About"}</a>
-              <a href="#stations" onClick={(e) => { e.preventDefault(); document.getElementById("stations")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "المراكز والخدمات" : "Services"}</a>
-              <a href="#faq" onClick={(e) => { e.preventDefault(); document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a>
-            </nav>
-          )}
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-650">
+            <a href="#" className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الرئيسية" : "Home"}</a>
+            <a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "عن المركز" : "About"}</a>
+            <a href="#stations" onClick={(e) => { e.preventDefault(); document.getElementById("stations")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "المراكز والخدمات" : "Services"}</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a>
+          </nav>
 
           {/* Header Action Items */}
           <div className="flex items-center gap-3">
@@ -551,27 +625,55 @@ export default function App() {
                     <span>{currentText.iframeUrlSettings}</span>
                   </h3>
                   
-                  <form onSubmit={applyCustomIframe} className="flex flex-col md:flex-row gap-3">
-                    <div className="flex-1 relative">
-                      <InputGroup 
-                        icon={<Globe className="w-4 h-4 text-slate-400" />}
-                        value={tempIframeUrl}
-                        onChange={(e) => setTempIframeUrl(e.target.value)}
-                        placeholder={currentText.iframeInputPlaceholder}
-                        dir="ltr"
-                        className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
-                      />
+                  <form onSubmit={applyCustomIframe} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Booking link group */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">
+                          {lang === "ar" ? "رابط بوابة الحجز المضمنة (Iframe Link)" : "Booking Portal Link"}
+                        </label>
+                        <InputGroup 
+                          icon={<Globe className="w-4 h-4 text-slate-400" />}
+                          value={tempIframeUrl}
+                          onChange={(e) => setTempIframeUrl(e.target.value)}
+                          placeholder={currentText.iframeInputPlaceholder}
+                          dir="ltr"
+                          className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-xs sm:text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
+                        />
+                      </div>
+
+                      {/* Phone group */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">
+                          {lang === "ar" ? "رقم الهاتف الفوري" : "Phone Number"}
+                        </label>
+                        <InputGroup 
+                          icon={<Phone className="w-4 h-4 text-slate-400" />}
+                          value={tempPhone}
+                          onChange={(e) => setTempPhone(e.target.value)}
+                          placeholder="+966 11 123 4567"
+                          dir="ltr"
+                          className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-xs sm:text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
+                        />
+                      </div>
+
+                      {/* Email group */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">
+                          {lang === "ar" ? "البريد الإلكتروني الموحد" : "Email Address"}
+                        </label>
+                        <InputGroup 
+                          icon={<Mail className="w-4 h-4 text-slate-400" />}
+                          value={tempEmail}
+                          onChange={(e) => setTempEmail(e.target.value)}
+                          placeholder="support@vehiclesafety.gov.sa"
+                          dir="ltr"
+                          className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-xs sm:text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
+                        />
+                      </div>
                     </div>
-                    
-                    <div className="flex gap-2">
-                      <button
-                        type="submit"
-                        className="px-5 py-2.5 bg-[#1E7D4E] hover:bg-[#155a37] text-white rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap md:w-auto w-full"
-                      >
-                        <Check className="w-4 h-4" />
-                        <span>{currentText.btnApply}</span>
-                      </button>
-                      
+
+                    <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
                       <button
                         type="button"
                         onClick={handleCopyCode}
@@ -579,7 +681,15 @@ export default function App() {
                         title={currentText.copyEmbedCode}
                       >
                         <Copy className="w-4 h-4" />
-                        <span className="hidden sm:inline">{currentText.copyEmbedCode}</span>
+                        <span>{currentText.copyEmbedCode}</span>
+                      </button>
+
+                      <button
+                        type="submit"
+                        className="px-6 py-2.5 bg-[#1E7D4E] hover:bg-[#155a37] text-white rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm md:w-auto w-full"
+                      >
+                        <Check className="w-4 h-4" />
+                        <span>{lang === "ar" ? "حفظ وتحديث البيانات" : "Save Changes"}</span>
                       </button>
                     </div>
                   </form>
@@ -617,8 +727,6 @@ export default function App() {
         </section>
       )}
 
-      {hasAdminAccess && (
-        <>
           {/* Strengths & Platform Features Section Grid */}
           <section id="stations" className="bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 border-y border-slate-100">
             <div className="max-w-7xl mx-auto">
@@ -758,11 +866,11 @@ export default function App() {
                 <div className="space-y-2.5 text-xs sm:text-sm text-slate-400">
                   <div className="flex items-center gap-2 lg:gap-3">
                     <Mail className="w-4 h-4 text-slate-500 shrink-0" />
-                    <span className="font-mono">support@vehiclesafety.gov.sa</span>
+                    <a href={`mailto:${email}`} className="font-mono hover:text-[#1E7D4E] transition-colors">{email}</a>
                   </div>
                   <div className="flex items-center gap-2 lg:gap-3">
                     <Phone className="w-4 h-4 text-slate-500 shrink-0" />
-                    <span className="font-mono">+966 11 123 4567</span>
+                    <a href={`tel:${phone}`} className="font-mono hover:text-[#1E7D4E] transition-colors">{phone}</a>
                   </div>
                   <div className="flex items-center gap-2 lg:gap-3">
                     <MapPin className="w-4 h-4 text-slate-500 shrink-0" />
@@ -773,8 +881,6 @@ export default function App() {
 
             </div>
           </section>
-        </>
-      )}
 
       {/* Compliance Footer (Requirements met) */}
       <footer className="bg-slate-950 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-900/60 text-center">
@@ -819,8 +925,13 @@ export default function App() {
 
       {/* Simple Custom Quiet Footer */}
       <footer className="bg-gray-50 border-t border-slate-200/60 py-6 px-4 text-center text-xs text-gray-400 font-sans" dir="rtl">
-        <div className="max-w-4xl mx-auto leading-relaxed">
-          جميع الحقوق محفوظة لمركز سلامة © 2024. المنصة عبارة عن بوابة تقنية مستقلة تهدف لتسهيل وصول المستخدمين لخدمات الحجز، وهي غير تابعة لأي جهة حكومية أو لشركة جوجل.
+        <div className="max-w-4xl mx-auto leading-relaxed space-y-2">
+          <p>جميع الحقوق محفوظة لمركز سلامة © 2024. المنصة عبارة عن بوابة تقنية مستقلة تهدف لتسهيل وصول المستخدمين لخدمات الحجز، وهي غير تابعة لأي جهة حكومية أو لشركة جوجل.</p>
+          <p className="text-[11px] text-slate-450 font-mono flex flex-wrap items-center justify-center gap-4" dir="ltr">
+            <span>Phone: <a href={`tel:${phone}`} className="hover:text-[#1E7D4E] transition-colors">{phone}</a></span>
+            <span>|</span>
+            <span>Email: <a href={`mailto:${email}`} className="hover:text-[#1E7D4E] transition-colors">{email}</a></span>
+          </p>
         </div>
       </footer>
 
