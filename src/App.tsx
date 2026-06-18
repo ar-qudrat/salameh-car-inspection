@@ -410,7 +410,17 @@ export default function App() {
           <div className="flex items-center gap-3">
             {/* High-quality styled SVG Logo matching KSA Vehicle Safety Center: Curved green triangle with white road inside and a brown base */}
             <div className="relative group transition-transform duration-300 hover:scale-[1.03]">
-              <svg viewBox="0 0 120 120" className="w-14 h-14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg 
+                viewBox="0 0 120 120" 
+                width="56" 
+                height="56" 
+                className="w-14 h-14" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-label={lang === "ar" ? "شعار مركز سلامة المركبات" : "Vehicle Safety Center Logo"}
+              >
+                <title>{lang === "ar" ? "شعار مركز سلامة المركبات" : "Vehicle Safety Center Logo"}</title>
                 {/* Curved green triangle representing the core chassis of Vehicle Safety Center branding */}
                 <path 
                   d="M 60,12 
@@ -494,6 +504,7 @@ export default function App() {
               onClick={() => setLang(lang === "ar" ? "en" : "ar")}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-semibold"
               title={lang === "ar" ? "Switch to English" : "تغيير للغة العربية"}
+              aria-label={lang === "ar" ? "Switch website language to English" : "تغيير لغة الموقع إلى العربية"}
             >
               <Globe className="w-4 h-4 text-[#1E7D4E]" />
               <span>{lang === "ar" ? "English" : "العربية"}</span>
@@ -503,6 +514,7 @@ export default function App() {
             <button 
               onClick={() => setIsBookingModalOpen(true)}
               className="hidden sm:flex items-center gap-2 bg-[#1E7D4E] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#155a37] shadow-sm transition-all shadow-[#1E7D4E]/10 cursor-pointer"
+              aria-label={lang === "ar" ? "احجز موعداً للفحص الدوري الآن" : "Book vehicle inspection appointment now"}
             >
               <Calendar className="w-4 h-4" />
               <span>{currentText.btnBookNow}</span>
@@ -563,6 +575,7 @@ export default function App() {
             <button
               onClick={() => setIsBookingModalOpen(true)}
               className="bg-[#1E7D4E] text-white font-extrabold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg shadow-[#1E7D4E]/25 hover:bg-[#155a37] hover:shadow-xl transition-all cursor-pointer flex items-center gap-2"
+              aria-label={lang === "ar" ? "اضغط لبدء حجز موعد الفحص الفني للمركبة" : "Click to start booking your vehicle inspection appointment"}
             >
               <Calendar className="w-5 h-5" />
               <span>{currentText.btnBookNow}</span>
@@ -572,6 +585,7 @@ export default function App() {
               type="button"
               onClick={() => setIsBookingModalOpen(true)}
               className="bg-white text-slate-800 font-extrabold text-sm sm:text-base px-8 py-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center gap-2 cursor-pointer"
+              aria-label={lang === "ar" ? "اضغط للتحقق من متطلبات التسجيل وحالة المركبة الفنية" : "Click to view vehicle safety registration requirements"}
             >
               <Shield className="w-5 h-5 text-[#1E7D4E]" />
               <span>{currentText.btnRegister}</span>
@@ -611,6 +625,7 @@ export default function App() {
                   type="button"
                   onClick={() => setIsBookingModalOpen(true)}
                   className="px-4 py-2 bg-[#1E7D4E] hover:bg-[#155a37] text-white rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                  aria-label={lang === "ar" ? "فتح معاينة بوابة الحجز المحدثة للأدمن" : "Open booking form portal preview for validation"}
                 >
                   <Eye className="w-4 h-4" />
                   <span>{lang === "ar" ? "فتح معاينة البوابة المحدثة" : "Open Booking Preview"}</span>
@@ -679,6 +694,7 @@ export default function App() {
                         onClick={handleCopyCode}
                         className="px-4 py-2.5 bg-slate-700 hover:bg-slate-650 text-white border border-slate-600 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         title={currentText.copyEmbedCode}
+                        aria-label={currentText.copyEmbedCode}
                       >
                         <Copy className="w-4 h-4" />
                         <span>{currentText.copyEmbedCode}</span>
@@ -687,6 +703,7 @@ export default function App() {
                       <button
                         type="submit"
                         className="px-6 py-2.5 bg-[#1E7D4E] hover:bg-[#155a37] text-white rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm md:w-auto w-full"
+                        aria-label={lang === "ar" ? "حفظ وتحديث البيانات" : "Save changes and synchronize with the real-time database"}
                       >
                         <Check className="w-4 h-4" />
                         <span>{lang === "ar" ? "حفظ وتحديث البيانات" : "Save Changes"}</span>
@@ -701,6 +718,7 @@ export default function App() {
                       type="button"
                       onClick={() => handlePresetSelect("https://example.com")}
                       className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
+                      aria-label="Load Example.com preview preset link"
                     >
                       Example.com (Default)
                     </button>
@@ -708,6 +726,7 @@ export default function App() {
                       type="button"
                       onClick={() => handlePresetSelect("https://wikipedia.org")}
                       className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
+                      aria-label="Load Arabic Wikipedia preview preset link"
                     >
                       Wikipedia (Arabic page support)
                     </button>
@@ -715,6 +734,7 @@ export default function App() {
                       type="button"
                       onClick={() => handlePresetSelect("https://maps.google.com/maps?q=riyadh+mvpi&t=&z=13&ie=UTF8&iwloc=&output=embed")}
                       className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
+                      aria-label="Load MVPI Google Maps search location preset link"
                     >
                       {lang === "ar" ? "مواقع الفحص على خرائط جوجل" : "Inspection Stations on Google Maps"}
                     </button>
@@ -812,6 +832,8 @@ export default function App() {
                         type="button"
                         onClick={() => setExpandedFaq(isOpen ? null : index)}
                         className="w-full text-right p-5 flex items-center justify-between gap-4 font-bold text-slate-800 hover:bg-slate-50 transition-colors text-sm sm:text-base cursor-pointer"
+                        aria-expanded={isOpen}
+                        aria-label={lang === "ar" ? `عرض تفاصيل السؤال: ${faq.questionAr}` : `Show details for question: ${faq.questionEn}`}
                       >
                         <span className="leading-tight">
                           {lang === "ar" ? faq.questionAr : faq.questionEn}
@@ -909,6 +931,7 @@ export default function App() {
             <button
               onClick={() => setShowTerms(true)}
               className="hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+              aria-label={lang === "ar" ? "اضغط لعرض شروط تقديم الخدمة" : "Click to view terms of service"}
             >
               <FileText className="w-4 h-4 text-[#1E7D4E]" />
               <span>{currentText.termsOfService}</span>
@@ -1080,6 +1103,7 @@ function Modal({ title, children, onClose }: ModalProps) {
             type="button"
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-full bg-slate-200 text-slate-600 hover:bg-slate-350 hover:text-slate-950 text-xs font-bold transition-all cursor-pointer"
+            aria-label="Close / إغلاق"
           >
             ✕
           </button>
@@ -1131,7 +1155,7 @@ function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreen
             type="button"
             className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-700 hover:bg-rose-100 hover:text-rose-700 transition-colors cursor-pointer"
             title={lang === "ar" ? "إغلاق" : "Close"}
-            aria-label="Close"
+            aria-label={lang === "ar" ? "إغلاق نافذة حجز فحص المركبة العائمة" : "Close vehicle inspection booking overlay frame"}
           >
             <X className="w-6 h-6" />
           </button>
