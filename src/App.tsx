@@ -34,9 +34,10 @@ import {
   ArrowRight,
   RefreshCw,
   Copy,
+  Search,
   X
 } from "lucide-react";
-import { STATIONS, VEHICLE_TYPES, FAQS, CITIES, TIME_SLOTS } from "./data";
+import { STATIONS, VEHICLE_TYPES, FAQS, CITIES, TIME_SLOTS, CITY_TRANSLATIONS } from "./data";
 import { Station, Appointment } from "./types";
 
 export default function App() {
@@ -235,7 +236,7 @@ export default function App() {
   const dict = {
     ar: {
       siteTitle: "مركز سلامة المركبات | المنصة الموحدة للفحص الفني الدوري",
-      oneOfProducts: "أحد منتجات مركز سلامة المركبات",
+      oneOfProducts: "أحد خدمات مركز سلامة المركبات",
       heroTitle: "المنصة الموحدة للفحص الفني الدوري للمركبات",
       heroSub: "قم بحجز وإدارة مواعيد الفحص الدوري لسيارتك بكل سهولة ويسر وبشكل مؤتمت لتوفير الوقت والجهد وتجنب صفوف الانتظار.",
       btnBookNow: "حجز موعد جديد",
@@ -251,8 +252,8 @@ export default function App() {
       step4Title: "4. استلام شهادة الفحص",
       step4Desc: "استلم تقرير الفحص الرقمي المرسل تلقائياً لنظام أبشر والمرتبط مباشرة بالمرور للسلامة.",
       embedSectionTitle: "نظام حجز وتضمين المواعيد المتكامل",
-      embedSectionSub: "تسمح هذه المنصة بتضمين أنظمة الحجز الخارجية عبر iframe المتجاوب أو استخدام المحاكي المدمج التفاعلي.",
-      toggleSimulated: "المحاكي التفاعلي المدمج (جاهز للاستخدام)",
+      embedSectionSub: "تسمح هذه المنصة بتضمين أنظمة الحجز الخارجية عبر iframe المتجاوب أو استخدام النظام المتكامل الذكي لتنسيق المواعيد.",
+      toggleSimulated: "النظام المتكامل لتنسيق المواعيد (جاهز للاستخدام)",
       toggleIframe: "تضمين رابط حجز مخصص (iFrame Custom URL)",
       iframeInputPlaceholder: "أدخل رابط بوابة الحجز الخاصة بك هنا...",
       btnApply: "تطبيق التضمين",
@@ -275,7 +276,7 @@ export default function App() {
       feat2Desc: "ربط متكامل مع قواعد السلامة والمنصات الوطنية الكبرى.",
       feat3: "أمان وموثوقية عالية",
       feat3Desc: "بيانات مركبتك مشفرة وحجوزاتك آمنة وفقاً لأفضل الممارسات البرمجية.",
-      bookingFormTitle: "محاكاة نظام الحجز والتحقق الفني",
+      bookingFormTitle: "النظام الذكي لتنسيق الحجز والتحقق الفني",
       bookingFormSub: "املأ البيانات أدناه لاستخراج تذكرة حجز فحص فني معتمدة في ثوانٍ.",
       stepIndicator: "الخطوة",
       of: "من",
@@ -308,7 +309,7 @@ export default function App() {
     },
     en: {
       siteTitle: "Vehicle Safety Center | Unified Periodic Vehicle Inspection Platform",
-      oneOfProducts: "One of the Vehicle Safety Center products",
+      oneOfProducts: "One of the Vehicle Safety Center services",
       heroTitle: "Unified Platform for Periodic Motor Vehicle Inspection",
       heroSub: "Book and manage your periodic inspection appointments easily and automatically. Save time, esfuerzo, and completely avoid long waiting queues.",
       btnBookNow: "Book New Appointment",
@@ -324,8 +325,8 @@ export default function App() {
       step4Title: "4. Digital Certificate",
       step4Desc: "Your vehicle's inspection report is sent instantly to Absher and integrated directly with traffic safety databases.",
       embedSectionTitle: "Integrated Booking System & Embed Console",
-      embedSectionSub: "This platform allows seamless integration of external booking systems via responsive iframe or our interactive simulator.",
-      toggleSimulated: "Interactive Booking Simulator (Built-in)",
+      embedSectionSub: "This platform allows seamless integration of external booking systems via responsive iframe or our interactive coordination system.",
+      toggleSimulated: "Interactive Booking System (Built-in)",
       toggleIframe: "Custom Booking Portal (Responsive iFrame)",
       iframeInputPlaceholder: "Paste your reservation portal URL here...",
       btnApply: "Embed Link",
@@ -348,7 +349,7 @@ export default function App() {
       feat2Desc: "Direct technical integration with major national traffic and road safety databases.",
       feat3: "Highest Security Specs",
       feat3Desc: "Your vehicle details and digital transactions are secured using maximum industry standard protocols.",
-      bookingFormTitle: "Stateful Inspection Booking Simulator",
+      bookingFormTitle: "Smart Inspection Booking System",
       bookingFormSub: "Submit the details below to generate a validated periodic inspection schedule ticket in real time.",
       stepIndicator: "Step",
       of: "of",
@@ -1135,14 +1136,79 @@ function Modal({ title, children, onClose }: ModalProps) {
   );
 }
 
-// Full-screen Booking / Registration Overlay Modal containing the dynamic iframe
+// Full-screen Booking / Registration Overlay Modal containing the dynamic simulation system and final iframe
 interface FullScreenBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   iframeUrl: string;
   lang: "ar" | "en";
 }
+
 function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreenBookingModalProps) {
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [vehicleType, setVehicleType] = useState<string>("");
+  const [year, setYear] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [loadingStepText, setLoadingStepText] = useState<string>("");
+  const [loadingPercentage, setLoadingPercentage] = useState<number>(0);
+
+  // Handle step 4 loading simulation sequence
+  useEffect(() => {
+    if (step === 4) {
+      setLoadingPercentage(10);
+      setLoadingStepText(
+        lang === "ar"
+          ? "جاري الاتصال بالنظام المركزي للتحقق من سلامة فئة المركبة..."
+          : "Connecting to central system to verify vehicle class safety status..."
+      );
+
+      const percentInterval = setInterval(() => {
+        setLoadingPercentage((prev) => Math.min(prev + 10, 100));
+      }, 250);
+
+      const timer1 = setTimeout(() => {
+        setLoadingStepText(
+          lang === "ar"
+            ? `جاري فحص السعة الاستيعابية للمحطات المتاحة بمدينة (${city})...`
+            : `Checking real-time capacity and booking quotas in (${city})...`
+        );
+      }, 1000);
+
+      const timer2 = setTimeout(() => {
+        setLoadingStepText(
+          lang === "ar"
+            ? "توليد قنوات اتصال آمنة وجدولة فترات الحجز المتاحة بالمسار..."
+            : "Generating secure portal routes and scheduling your inspection run..."
+        );
+      }, 2000);
+
+      const timer3 = setTimeout(() => {
+        clearInterval(percentInterval);
+        setStep(5);
+      }, 3000);
+
+      return () => {
+        clearInterval(percentInterval);
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+      };
+    }
+  }, [step, city, lang]);
+
+  const handleReset = () => {
+    setStep(1);
+    setVehicleType("");
+    setYear("");
+    setCity("");
+    setSearchQuery("");
+    setLoadingPercentage(0);
+    setLoadingStepText("");
+  };
+
+  const isRtl = lang === "ar";
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-2 sm:p-4">
       <motion.div
@@ -1153,17 +1219,17 @@ function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreen
         className="bg-white rounded-2xl w-full h-[96vh] sm:h-[90vh] max-w-7xl flex flex-col shadow-2xl border border-slate-200 overflow-hidden relative"
       >
         {/* Header */}
-        <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="bg-slate-50 px-5 py-4 border-b border-slate-205 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#1E7D4E] flex items-center justify-center text-white font-extrabold text-sm select-none">
               S
             </div>
             <div>
               <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm tracking-tight leading-none mb-1">
-                {lang === "ar" ? "بوابة الحجز الإلكتروني الموحدة" : "Unified Electronic Booking Portal"}
+                {lang === "ar" ? "نظام حجز مواعيد الفحص الفني الذكي" : "Smart Inspection Booking System"}
               </h3>
               <p className="text-[10px] text-[#1E7D4E] font-bold leading-none">
-                {lang === "ar" ? "مركز سلامة المركبات" : "Vehicle Safety Center"}
+                {lang === "ar" ? "مركز سلامة المركبات - النظام الذكي لتنسيق المواعيد" : "Vehicle Safety Center - Smart Appointment Coordination System"}
               </p>
             </div>
           </div>
@@ -1180,17 +1246,429 @@ function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreen
           </button>
         </div>
 
-        {/* Iframe Content Area */}
-        <div className="flex-1 bg-slate-50 relative">
-          <iframe
-            src={iframeUrl}
-            title="Vehicle Safety Center Booking Real Portal"
-            className="w-full h-full border-none"
-            allowFullScreen
-            referrerPolicy="no-referrer"
-          />
+        {/* Dynamic Frame / Simulator Body */}
+        <div className="flex-1 bg-slate-50 relative flex flex-col overflow-y-auto">
+          
+          {/* Questionnaire Steps Status Tracker (Visible in Steps 1-3) */}
+          {step <= 3 && (
+            <div className="bg-white border-b border-slate-100 py-3 px-6 flex items-center justify-between text-xs font-bold text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded ${step === 1 ? "bg-[#1E7D4E] text-white" : "bg-slate-100 text-slate-600"}`}>1</span>
+                <span>{lang === "ar" ? "نوع المركبة" : "Vehicle Type"}</span>
+                <span className="text-slate-300">/</span>
+                <span className={`px-2 py-0.5 rounded ${step === 2 ? "bg-[#1E7D4E] text-white" : "bg-slate-100 text-slate-600"}`}>2</span>
+                <span>{lang === "ar" ? "سنة الصنع" : "Manufacturing Year"}</span>
+                <span className="text-slate-300">/</span>
+                <span className={`px-2 py-0.5 rounded ${step === 3 ? "bg-[#1E7D4E] text-white" : "bg-slate-100 text-slate-600"}`}>3</span>
+                <span>{lang === "ar" ? "المدينة" : "City"}</span>
+              </div>
+              <div>
+                {lang === "ar" ? `الخطوة ${step} من 3` : `Step ${step} of 3`}
+              </div>
+            </div>
+          )}
+
+          {/* Render Step Content */}
+          <div className={`flex-1 flex flex-col justify-center items-center p-6 mx-auto w-full transition-all duration-300 ${step === 3 ? "max-w-5xl" : "max-w-3xl"}`}>
+            
+            {/* STEP 1: Vehicle Type */}
+            {step === 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="w-full text-center space-y-6"
+              >
+                <div className="space-y-2">
+                  <span className="inline-flex bg-emerald-50 text-[#1E7D4E] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    {lang === "ar" ? "المرحلة الأولى: فئة المركبة" : "Phase 1: Vehicle Category"}
+                  </span>
+                  <h4 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    {lang === "ar" ? "ما هو نوع مركبتك المراد فحصها؟" : "What is your vehicle type to inspect?"}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+                    {lang === "ar" 
+                      ? "يرجى تحديد الفئة الصحيحة لضمان توافر مسارات الفحص والأنظمة المناسبة لمركبتك."
+                      : "Please identify your vehicle class to check system availability and track sizes."}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 max-w-2xl mx-auto">
+                  {/* Private Option */}
+                  <button
+                    onClick={() => {
+                      setVehicleType(lang === "ar" ? "خصوصي" : "Private");
+                      setStep(2);
+                    }}
+                    className="group bg-white border-2 border-slate-200/90 hover:border-[#1E7D4E] p-6 rounded-2xl flex flex-col items-center gap-4 text-center transition-all cursor-pointer hover:shadow-lg hover:-translate-y-1 active:translate-y-0"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-emerald-50 text-[#1E7D4E] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Car className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h5 className="font-extrabold text-slate-800 text-base">
+                        {lang === "ar" ? "خصوصي" : "Passenger/Private"}
+                      </h5>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        {lang === "ar" ? "السيارات الصغيرة والمركبات العائلية الخاصة" : "Personal family sedans, SUVs, and compact cars"}
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Transport Option */}
+                  <button
+                    onClick={() => {
+                      setVehicleType(lang === "ar" ? "نقل" : "Transport");
+                      setStep(2);
+                    }}
+                    className="group bg-white border-2 border-slate-200/90 hover:border-[#1E7D4E] p-6 rounded-2xl flex flex-col items-center gap-4 text-center transition-all cursor-pointer hover:shadow-lg hover:-translate-y-1 active:translate-y-0"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-emerald-50 text-[#1E7D4E] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h5 className="font-extrabold text-slate-800 text-base">
+                        {lang === "ar" ? "نقل" : "Transport Freight"}
+                      </h5>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        {lang === "ar" ? "مركبات النقل الخفيف، الثقيل، وقاطرات الشحن" : "Light to heavy commercial logistics and pickups"}
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Bus Option */}
+                  <button
+                    onClick={() => {
+                      setVehicleType(lang === "ar" ? "حافلة" : "Bus");
+                      setStep(2);
+                    }}
+                    className="group bg-white border-2 border-slate-200/90 hover:border-[#1E7D4E] p-6 rounded-2xl flex flex-col items-center gap-4 text-center transition-all cursor-pointer hover:shadow-lg hover:-translate-y-1 active:translate-y-0"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-emerald-50 text-[#1E7D4E] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Sliders className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h5 className="font-extrabold text-slate-800 text-base">
+                        {lang === "ar" ? "حافلة" : "Bus Transits"}
+                      </h5>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        {lang === "ar" ? "حافلات الركاب بجميع مقاساتها العامة والخاصة" : "Public/private passenger coach and tourist buses"}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 2: Vehicle Year */}
+            {step === 2 && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="w-full text-center space-y-6"
+              >
+                <div className="space-y-2">
+                  <span className="inline-flex bg-emerald-50 text-[#1E7D4E] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    {lang === "ar" ? "المرحلة الثانية: سنة صنع المركبة" : "Phase 2: Manufacturing Year"}
+                  </span>
+                  <h4 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    {lang === "ar" ? "اختر سنة صنع المركبة" : "What is the manufacturing year of the vehicle?"}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+                    {lang === "ar" 
+                      ? "سنة الصنع مهمة لتطبيق معايير الانبعاثات والسلامة الفنية المناسبة لمركبتك."
+                      : "The model year helps determine the specific emissions and technical test standards."}
+                  </p>
+                </div>
+
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl max-w-sm mx-auto shadow-sm space-y-6">
+                  <div className="flex items-center justify-center text-[#1E7D4E]">
+                    <Calendar className="w-14 h-14 bg-emerald-50 p-3 rounded-2xl" />
+                  </div>
+
+                  <div className="relative">
+                    <select
+                      value={year}
+                      onChange={(e) => setYear(e.target.value)}
+                      className="appearance-none w-full bg-slate-50 border-2 border-slate-200 text-slate-800 font-extrabold py-3.5 px-6 pr-10 text-center rounded-xl focus:border-[#1E7D4E] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#1E7D4E] transition-all cursor-pointer shadow-sm hover:border-slate-300"
+                    >
+                      <option value="">
+                        {lang === "ar" ? "-- اختر سنة الصنع --" : "-- Choose Year --"}
+                      </option>
+                      {Array.from({ length: 32 }, (_, i) => String(2026 - i)).map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-550">
+                      <ChevronDown className="w-5 h-5 text-slate-500" />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-6 py-3 rounded-xl transition-all cursor-pointer"
+                    >
+                      {lang === "ar" ? "رجوع" : "Back"}
+                    </button>
+                    <button
+                      onClick={() => year && setStep(3)}
+                      disabled={!year}
+                      className="bg-[#1E7D4E] text-white hover:bg-[#1E7D4E]/90 disabled:opacity-50 disabled:cursor-not-allowed font-bold px-8 py-3 rounded-xl flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
+                    >
+                      <span>{lang === "ar" ? "استمرار" : "Continue"}</span>
+                      <ArrowRight className={`w-4 h-4 ${isRtl ? "rotate-180" : ""}`} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 3: Inspection City */}
+            {step === 3 && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="w-full text-center space-y-6"
+              >
+                <div className="space-y-2">
+                  <span className="inline-flex bg-emerald-50 text-[#1E7D4E] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    {lang === "ar" ? "المرحلة الثالثة: مدينة الفحص" : "Phase 3: Inspection City"}
+                  </span>
+                  <h4 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    {lang === "ar" ? "اختر مدينة الفحص الفني" : "Select the Inspection City"}
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+                    {lang === "ar" 
+                      ? "جاري العثور على أفضل محطات الفحص الفني المتاحة في مدينتك لتقصير فترات الانتظار."
+                      : "We inspect operational loads in your selected city to secure priority slots."}
+                  </p>
+                </div>
+
+                {/* Stylish Search Bar */}
+                <div className="max-w-md mx-auto pb-2 relative">
+                  <div className={`absolute inset-y-0 flex items-center pointer-events-none ${isRtl ? "right-4" : "left-4"}`}>
+                    <Search className="w-4.5 h-4.5 text-slate-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    dir={isRtl ? "rtl" : "ltr"}
+                    className={`w-full bg-white border-2 border-slate-200 hover:border-slate-300 rounded-xl font-medium text-slate-800 text-sm py-3 focus:outline-none focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E] transition-all shadow-sm ${
+                      isRtl ? "pr-11 pl-10 text-right" : "pl-11 pr-10 text-left"
+                    }`}
+                    placeholder={
+                      lang === "ar"
+                        ? "ابحث عن مدينتك (مثال: الطائف، الخبر، بريدة)..."
+                        : "Search for your city (e.g. Taif, Al Khobar, Buraidah)..."
+                    }
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className={`absolute inset-y-0 flex items-center text-slate-400 hover:text-slate-600 px-3 cursor-pointer ${
+                        isRtl ? "left-2" : "right-2"
+                      }`}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter and render grid. Styled for desktop & mobile beautifully. */}
+                {(() => {
+                  const filtered = CITIES.filter((cityName) => {
+                    const englishName = CITY_TRANSLATIONS[cityName] || "";
+                    const q = searchQuery.trim().toLowerCase();
+                    if (!q) return true;
+                    return cityName.includes(q) || englishName.toLowerCase().includes(q);
+                  });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="py-12 text-center space-y-3 bg-white border border-slate-150 rounded-2xl max-w-md mx-auto shadow-sm"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                          <MapPin className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1 px-4">
+                          <h5 className="font-extrabold text-slate-800 text-sm">
+                            {lang === "ar" ? "لم يتم العثور على نتائج" : "No Cities Found"}
+                          </h5>
+                          <p className="text-xs text-slate-450 leading-relaxed">
+                            {lang === "ar"
+                              ? `عذراً، لم نجد محطات فحص تابعة لـ "${searchQuery}". جرب كلمة أخرى.`
+                              : `Sorry, we found no inspection nodes matched with "${searchQuery}".`}
+                          </p>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full pt-1">
+                      {filtered.map((availableCity) => {
+                        const englishCity = CITY_TRANSLATIONS[availableCity] || availableCity;
+                        return (
+                          <button
+                            key={availableCity}
+                            onClick={() => {
+                              setCity(lang === "ar" ? availableCity : englishCity);
+                              setStep(4);
+                            }}
+                            className={`group bg-white border-2 border-slate-200/85 hover:border-[#1E7D4E] hover:shadow-md p-4 rounded-xl flex items-center gap-3 transition-all cursor-pointer w-full hover:-translate-y-0.5 ${
+                              isRtl ? "text-right" : "text-left"
+                            }`}
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-emerald-50 text-[#1E7D4E] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                              <MapPin className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                              <h5 className="font-extrabold text-slate-800 text-sm truncate">
+                                {lang === "ar" ? availableCity : englishCity}
+                              </h5>
+                              <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
+                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                                <span>{lang === "ar" ? "مواعيد متاحة" : "Slots Available"}</span>
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                <div className="flex justify-center pt-2">
+                  <button
+                    onClick={() => {
+                      setStep(2);
+                      setSearchQuery("");
+                    }}
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-8 py-2.5 rounded-xl transition-all cursor-pointer"
+                  >
+                    {lang === "ar" ? "رجوع" : "Back"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 4: Smart Loading Simulation */}
+            {step === 4 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full text-center space-y-8 py-6 max-w-md"
+              >
+                <div className="relative flex flex-col items-center justify-center">
+                  {/* Rotating loader sphere */}
+                  <div className="w-24 h-24 rounded-full border-4 border-slate-100 border-t-[#1E7D4E] animate-spin relative flex items-center justify-center">
+                  </div>
+                  {/* Floating percentage inside */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl font-extrabold text-[#1E7D4E] font-mono">{loadingPercentage}%</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-lg font-extrabold text-slate-800 tracking-tight flex items-center justify-center gap-2">
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#1E7D4E]" />
+                    <span>{lang === "ar" ? "جاري تشغيل النظام الذكي لتنسيق الفحص..." : "Initiating Smart Inspection Coordination..."}</span>
+                  </h4>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden max-w-xs mx-auto">
+                    <motion.div 
+                      className="bg-[#1E7D4E] h-full" 
+                      style={{ width: `${loadingPercentage}%` }}
+                      transition={{ ease: "easeOut" }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium px-4 min-h-[40px] flex items-center justify-center max-w-sm mx-auto leading-relaxed">
+                    {loadingStepText}
+                  </p>
+                </div>
+
+                {/* Secure visual progress telemetry report */}
+                <div className="bg-slate-900 text-emerald-400 p-4 rounded-xl text-[10px] font-mono text-left space-y-1.5 w-full shadow-inner border border-slate-800 max-w-sm mx-auto" dir="ltr">
+                  <p className="text-slate-500">SYSTEM CORRELATION REPORT:</p>
+                  <p>&gt; VEHICLE CLASS: {vehicleType.toUpperCase() || "PENDING"}</p>
+                  <p>&gt; YEAR: {year || "PENDING"}</p>
+                  <p>&gt; REGION NODE: {city || "GLOBAL"}</p>
+                  <p>&gt; POOL COGNITION RATE: OK (200ms)</p>
+                  <p>&gt; DIRECTORY INTEGRITY: EXCELLENT</p>
+                </div>
+              </motion.div>
+            )}
+
+          </div>
+
+          {/* STEP 5: Final Result - Render confirmation and responsive iframe */}
+          {step === 5 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex-1 flex flex-col h-full w-full"
+            >
+              {/* Success Coordination Alert Banner */}
+              <div className="bg-emerald-50 border-b border-emerald-150 p-4 shrink-0">
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-right" dir={isRtl ? "rtl" : "ltr"}>
+                  <div className="flex items-start sm:items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#1E7D4E] flex items-center justify-center text-white shrink-0 animate-bounce">
+                      <Check className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-[#1E7D4E] text-sm sm:text-base leading-snug">
+                        {lang === "ar" 
+                          ? "تم العثور على مواعيد متاحة! يمكنك الآن إكمال الحجز أدناه."
+                          : "Inspection slot discovered! Complete your registration below."}
+                      </h4>
+                      <p className="text-xs text-slate-500 leading-snug mt-0.5 flex flex-wrap items-center gap-2">
+                        <span>
+                          {lang === "ar" 
+                            ? `المركبة: ${vehicleType} • موديل: ${year} • مدينة الفحص: ${city}`
+                            : `Class: ${vehicleType} • Year: ${year} • Region: ${city}`}
+                        </span>
+                        <span className="hidden sm:inline">|</span>
+                        <span className="text-[#1E7D4E] font-bold">
+                          {lang === "ar" ? "✓ تم ربط نظام الفحص الفني بنجاح" : "✓ Routing system coupled"}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleReset}
+                    className="self-end sm:self-center text-xs text-[#1E7D4E] hover:text-[#1E7D4E]/80 border border-[#1E7D4E]/20 bg-white font-bold py-1.5 px-3 rounded-lg hover:shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>{lang === "ar" ? "إعادة فحص وتنسيق الموعد" : "Restart Diagnostics"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Secure dynamic iframe loaded according to Admin configurations */}
+              <div className="flex-1 bg-slate-100 relative min-h-[350px]">
+                <iframe
+                  src={iframeUrl}
+                  title="Vehicle Safety Center Booking Real Portal"
+                  className="w-full h-full border-none absolute inset-0"
+                  allowFullScreen
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </motion.div>
+          )}
+
         </div>
       </motion.div>
     </div>
   );
 }
+
