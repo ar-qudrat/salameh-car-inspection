@@ -33,7 +33,8 @@ import {
   Lock,
   ArrowRight,
   RefreshCw,
-  Copy
+  Copy,
+  X
 } from "lucide-react";
 import { STATIONS, VEHICLE_TYPES, FAQS, CITIES, TIME_SLOTS } from "./data";
 import { Station, Appointment } from "./types";
@@ -62,6 +63,7 @@ export default function App() {
   // Modal Policy States
   const [showPrivacy, setShowPrivacy] = useState<boolean>(false);
   const [showTerms, setShowTerms] = useState<boolean>(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
 
   // Toast notification for link copy
   const [toastMessage, setToastMessage] = useState<string>("");
@@ -425,7 +427,7 @@ export default function App() {
 
             {/* Direct Book anchor linking to bottom */}
             <button 
-              onClick={scrollToBooking}
+              onClick={() => setIsBookingModalOpen(true)}
               className="hidden sm:flex items-center gap-2 bg-[#1E7D4E] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#155a37] shadow-sm transition-all shadow-[#1E7D4E]/10 cursor-pointer"
             >
               <Calendar className="w-4 h-4" />
@@ -485,210 +487,135 @@ export default function App() {
             className="flex flex-wrap items-center justify-center gap-4"
           >
             <button
-              onClick={scrollToBooking}
-              className="bg-[#1E7D4E] text-white font-extrabold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg shadow-[#1E7D4E]/25 hover:bg-[#155a37] hover:shadow-xl transition-all cursor-pointer flex items-center gap-2 "
+              onClick={() => setIsBookingModalOpen(true)}
+              className="bg-[#1E7D4E] text-white font-extrabold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg shadow-[#1E7D4E]/25 hover:bg-[#155a37] hover:shadow-xl transition-all cursor-pointer flex items-center gap-2"
             >
               <Calendar className="w-5 h-5" />
               <span>{currentText.btnBookNow}</span>
             </button>
             
-            <a
-              href="#register"
-              onClick={(e) => {
-                e.preventDefault();
-                setToastMessage(lang === "ar" ? "سيتم فتح التسجيل قريباً بالتنسيق مع نظام النفاذ الوطني الموحد." : "Registration will open soon in integration with Single Sign-On.");
-                setTimeout(() => setToastMessage(""), 4000);
-              }}
-              className="bg-white text-slate-800 font-extrabold text-sm sm:text-base px-8 py-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center gap-2"
+            <button
+              type="button"
+              onClick={() => setIsBookingModalOpen(true)}
+              className="bg-white text-slate-800 font-extrabold text-sm sm:text-base px-8 py-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-center gap-2 cursor-pointer"
             >
-              <Shield className="w-5 h-5 text-slate-500" />
+              <Shield className="w-5 h-5 text-[#1E7D4E]" />
               <span>{currentText.btnRegister}</span>
-            </a>
+            </button>
           </motion.div>
 
         </div>
       </section>
 
-      {/* Responsive iframe Area (The Embed) */}
-      <section ref={bookingRef} className="py-12 bg-gradient-to-b from-[#1E7D4E]/3 to-slate-50 border-t border-b border-slate-150/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Admin Dashboard: Style display:none/block as requested */}
-          <div 
-            className="bg-slate-900 text-white p-5 sm:p-6 rounded-2xl border border-slate-800 mb-8"
-            style={{ display: hasAdminAccess ? "block" : "none" }}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-[#1E7D4E]/20 rounded-lg border border-[#1E7D4E]/50">
-                  <Activity className="w-6 h-6 text-[#1E7D4E]" />
-                </div>
-                <div>
-                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white mb-0.5">
-                    {currentText.iframeUrlSettings}
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    {lang === "ar" 
-                      ? "لوحة معينة وتعديل رابط الحجز وحفظه في الـ localStorage" 
-                      : "Control and save the booking form iframe link dynamically."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Sizing Toggles for testing */}
-              <div className="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setDeviceFrame("desktop")}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                    deviceFrame === "desktop" ? "bg-[#1E7D4E] text-white font-bold" : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Laptop className="w-3.5 h-3.5" />
-                  <span>{currentText.deviceDesktop}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeviceFrame("tablet")}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                    deviceFrame === "tablet" ? "bg-[#1E7D4E] text-white font-bold" : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Tablet className="w-3.5 h-3.5" />
-                  <span>{currentText.deviceTablet}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeviceFrame("mobile")}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                    deviceFrame === "mobile" ? "bg-[#1E7D4E] text-white font-bold" : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Smartphone className="w-3.5 h-3.5" />
-                  <span>{currentText.deviceMobile}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Custom URL controller settings */}
-            <div className="mt-5 pt-5 border-t border-slate-800/80">
-              <div className="bg-slate-800 p-4 rounded-xl border border-slate-700/60">
-                <h3 className="text-xs sm:text-sm font-bold text-slate-200 mb-2.5 flex items-center gap-1.5">
-                  <Sliders className="w-4 h-4 text-[#1E7D4E]" />
-                  <span>{currentText.iframeUrlSettings}</span>
-                </h3>
-                
-                <form onSubmit={applyCustomIframe} className="flex flex-col md:flex-row gap-3">
-                  <div className="flex-1 relative">
-                    <InputGroup 
-                      icon={<Globe className="w-4 h-4 text-slate-400" />}
-                      value={tempIframeUrl}
-                      onChange={(e) => setTempIframeUrl(e.target.value)}
-                      placeholder={currentText.iframeInputPlaceholder}
-                      dir="ltr"
-                      className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
-                    />
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 bg-[#1E7D4E] hover:bg-[#155a37] text-white rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap md:w-auto w-full"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>{currentText.btnApply}</span>
-                    </button>
-                    
-                    <button
-                      type="button"
-                      onClick={handleCopyCode}
-                      className="px-4 py-2.5 bg-slate-700 hover:bg-slate-650 text-white border border-slate-600 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                      title={currentText.copyEmbedCode}
-                    >
-                      <Copy className="w-4 h-4" />
-                      <span className="hidden sm:inline">{currentText.copyEmbedCode}</span>
-                    </button>
-                  </div>
-                </form>
-
-                {/* Quick presets for iframe safety URL */}
-                <div className="mt-3.5 flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-slate-400 font-bold">{lang === "ar" ? "روابط سريعة للتجربة:" : "Test Links Preset:"}</span>
-                  <button
-                    type="button"
-                    onClick={() => handlePresetSelect("https://example.com")}
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
-                  >
-                    Example.com (Default)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handlePresetSelect("https://wikipedia.org")}
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
-                  >
-                    Wikipedia (Arabic page support)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handlePresetSelect("https://maps.google.com/maps?q=riyadh+mvpi&t=&z=13&ie=UTF8&iwloc=&output=embed")}
-                    className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
-                  >
-                    {lang === "ar" ? "مواقع الفحص على خرائط جوجل" : "Inspection Stations on Google Maps"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Iframe Area */}
-          <div className="p-0 bg-transparent">
+      {/* Admin Dashboard Control (Only rendering if admin mode has been unlocked) */}
+      {hasAdminAccess && (
+        <section className="py-12 bg-slate-100 border-t border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <div 
-              className="w-full transition-all duration-500 ease-in-out mx-auto"
-              style={{
-                maxWidth: 
-                  (!hasAdminAccess || deviceFrame === "desktop") ? "100%" : 
-                  deviceFrame === "tablet" ? "768px" : "380px"
-              }}
+              className="bg-slate-900 text-white p-5 sm:p-6 rounded-2xl border border-slate-800"
             >
-              
-              {/* Outer container shell */}
-              <div className={`${hasAdminAccess ? 'bg-white rounded-xl shadow-lg border border-slate-200/90' : 'bg-white rounded-2xl border border-slate-150/60 shadow-2xl'} overflow-hidden relative`}>
-                
-                {/* Simulated Address Bar for Admin Panel only */}
-                {hasAdminAccess && (
-                  <div className="bg-slate-50 border-b border-slate-200 py-2.5 px-4 flex items-center gap-2">
-                    <div className="flex gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                    </div>
-                    <div className="flex-1 flex justify-center">
-                      <div className="bg-white border border-slate-200 text-slate-400 px-4 py-1 rounded-md text-[11px] font-mono tracking-tight text-center w-full max-w-sm truncate select-none">
-                        {iframeUrl}
-                      </div>
-                    </div>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-[#1E7D4E]/20 rounded-lg border border-[#1E7D4E]/50">
+                    <Activity className="w-6 h-6 text-[#1E7D4E]" />
                   </div>
-                )}
-
-                {/* Real responsive full-height iframe */}
-                <div className="relative w-full h-[650px] bg-white">
-                  <iframe 
-                    src={iframeUrl} 
-                    title="Vehicle Safety Center Booking Real Portal"
-                    className="w-full h-full border-none shadow-inner"
-                    allowFullScreen
-                    referrerPolicy="no-referrer"
-                  />
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white mb-0.5">
+                      {currentText.iframeUrlSettings}
+                    </h2>
+                    <p className="text-xs text-slate-400">
+                      {lang === "ar" 
+                        ? "لوحة تعديل رابط الحجز ومزامنته مع قاعدة البيانات الفورية" 
+                        : "Control and save the booking form iframe link dynamically."}
+                    </p>
+                  </div>
                 </div>
 
+                {/* Open Modal Preview Button for Admin's testing */}
+                <button
+                  type="button"
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="px-4 py-2 bg-[#1E7D4E] hover:bg-[#155a37] text-white rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>{lang === "ar" ? "فتح معاينة البوابة المحدثة" : "Open Booking Preview"}</span>
+                </button>
               </div>
-              
-            </div>
-          </div>
 
-        </div>
-      </section>
+              {/* Custom URL controller settings */}
+              <div className="mt-5 pt-5 border-t border-slate-800/80">
+                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700/60">
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-200 mb-2.5 flex items-center gap-1.5">
+                    <Sliders className="w-4 h-4 text-[#1E7D4E]" />
+                    <span>{currentText.iframeUrlSettings}</span>
+                  </h3>
+                  
+                  <form onSubmit={applyCustomIframe} className="flex flex-col md:flex-row gap-3">
+                    <div className="flex-1 relative">
+                      <InputGroup 
+                        icon={<Globe className="w-4 h-4 text-slate-400" />}
+                        value={tempIframeUrl}
+                        onChange={(e) => setTempIframeUrl(e.target.value)}
+                        placeholder={currentText.iframeInputPlaceholder}
+                        dir="ltr"
+                        className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
+                      />
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="px-5 py-2.5 bg-[#1E7D4E] hover:bg-[#155a37] text-white rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap md:w-auto w-full"
+                      >
+                        <Check className="w-4 h-4" />
+                        <span>{currentText.btnApply}</span>
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={handleCopyCode}
+                        className="px-4 py-2.5 bg-slate-700 hover:bg-slate-650 text-white border border-slate-600 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        title={currentText.copyEmbedCode}
+                      >
+                        <Copy className="w-4 h-4" />
+                        <span className="hidden sm:inline">{currentText.copyEmbedCode}</span>
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Quick presets for iframe safety URL */}
+                  <div className="mt-3.5 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-slate-400 font-bold">{lang === "ar" ? "روابط سريعة للتجربة:" : "Test Links Preset:"}</span>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetSelect("https://example.com")}
+                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
+                    >
+                      Example.com (Default)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetSelect("https://wikipedia.org")}
+                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
+                    >
+                      Wikipedia (Arabic page support)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetSelect("https://maps.google.com/maps?q=riyadh+mvpi&t=&z=13&ie=UTF8&iwloc=&output=embed")}
+                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[11px] transition-all cursor-pointer"
+                    >
+                      {lang === "ar" ? "مواقع الفحص على خرائط جوجل" : "Inspection Stations on Google Maps"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      )}
 
       {hasAdminAccess && (
         <>
@@ -923,6 +850,18 @@ export default function App() {
           </Modal>
         )}
       </AnimatePresence>
+      
+      {/* Full-Screen Booking/Registration Modal Portal overlay */}
+      <AnimatePresence>
+        {isBookingModalOpen && (
+          <FullScreenBookingModal 
+            isOpen={isBookingModalOpen} 
+            onClose={() => setIsBookingModalOpen(false)} 
+            iframeUrl={iframeUrl} 
+            lang={lang} 
+          />
+        )}
+      </AnimatePresence>
 
     </div>
   );
@@ -1029,6 +968,66 @@ function Modal({ title, children, onClose }: ModalProps) {
         </div>
         <div className="p-6 overflow-y-auto max-h-[70vh]">
           {children}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// Full-screen Booking / Registration Overlay Modal containing the dynamic iframe
+interface FullScreenBookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  iframeUrl: string;
+  lang: "ar" | "en";
+}
+function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreenBookingModalProps) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-2 sm:p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white rounded-2xl w-full h-[96vh] sm:h-[90vh] max-w-7xl flex flex-col shadow-2xl border border-slate-200 overflow-hidden relative"
+      >
+        {/* Header */}
+        <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#1E7D4E] flex items-center justify-center text-white font-extrabold text-sm select-none">
+              S
+            </div>
+            <div>
+              <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm tracking-tight leading-none mb-1">
+                {lang === "ar" ? "بوابة الحجز الإلكتروني الموحدة" : "Unified Electronic Booking Portal"}
+              </h3>
+              <p className="text-[10px] text-[#1E7D4E] font-bold leading-none">
+                {lang === "ar" ? "مركز سلامة المركبات" : "Vehicle Safety Center"}
+              </p>
+            </div>
+          </div>
+          
+          {/* Close Button (X) - Large and clear in corner */}
+          <button
+            onClick={onClose}
+            type="button"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-700 hover:bg-rose-100 hover:text-rose-700 transition-colors cursor-pointer"
+            title={lang === "ar" ? "إغلاق" : "Close"}
+            aria-label="Close"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Iframe Content Area */}
+        <div className="flex-1 bg-slate-50 relative">
+          <iframe
+            src={iframeUrl}
+            title="Vehicle Safety Center Booking Real Portal"
+            className="w-full h-full border-none"
+            allowFullScreen
+            referrerPolicy="no-referrer"
+          />
         </div>
       </motion.div>
     </div>
