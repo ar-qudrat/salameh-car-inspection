@@ -93,7 +93,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Handle Admin query detection and password entry with the requested password "Salameh2024"
+  // Handle Admin query detection and password entry with the requested password "101010"
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -103,7 +103,7 @@ export default function App() {
             ? "الرجاء إدخال كلمة مرور مدير النظام (الأدمن):" 
             : "Please enter the admin password:"
         );
-        if (password === "Salameh2024") {
+        if (password === "101010") {
           setHasAdminAccess(true);
           setToastMessage(lang === "ar" ? "تم تسجيل الدخول كمدير للنظام بنجاح!" : "Logged into Admin portal successfully!");
           setTimeout(() => setToastMessage(""), 4000);
