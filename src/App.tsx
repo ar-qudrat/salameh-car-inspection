@@ -817,6 +817,13 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Simple Custom Quiet Footer */}
+      <footer className="bg-gray-50 border-t border-slate-200/60 py-6 px-4 text-center text-xs text-gray-400 font-sans" dir="rtl">
+        <div className="max-w-4xl mx-auto leading-relaxed">
+          جميع الحقوق محفوظة لمركز سلامة © 2024. المنصة عبارة عن بوابة تقنية مستقلة تهدف لتسهيل وصول المستخدمين لخدمات الحجز، وهي غير تابعة لأي جهة حكومية أو لشركة جوجل.
+        </div>
+      </footer>
+
       {/* Modal: Privacy Policy */}
       <AnimatePresence>
         {showPrivacy && (
@@ -838,13 +845,13 @@ export default function App() {
         {showTerms && (
           <Modal title={currentText.termsOfService} onClose={() => setShowTerms(false)}>
             <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed text-right p-1.5 font-sans" dir="rtl">
-              <p className="font-extrabold text-[#1E7D4E]">شروط التصفح وعرض الحجز الرقمي</p>
-              <p>باستخدامك المنصة للفحص الفني للمركبات، فإنك تقر وتلتزم بالقواعد المنظمة في وزارة النقل السعودي لإخلاء الذمة، ومراجعة المحطة في الوقت المحدد لضمان السلامة المروية.</p>
-              <p className="font-bold text-slate-800">الضوابط والشروط الفنية للخدمة:</p>
+              <p className="font-extrabold text-[#1E7D4E]">شروط الاستخدام وإتمام الحجز الرقمي</p>
+              <p>باستخدامك لهذه المنصة للاستعلم وحجز مواعيد الفحص الفني للمركبات، فإنك تقر وتلتزم بالقواعد والأنظمة المعتمدة للفحص الفني الدوري للسيارات بالمملكة العربية السعودية، ومراجعة محطة الفحص الفني في الموعد المحدد لضمان السلامة المرورية.</p>
+              <p className="font-bold text-slate-800">الضوابط والشروط العامة للخدمة:</p>
               <ul className="list-disc list-inside space-y-1.5 text-slate-550 pr-4">
-                <li>المستفيد مسؤول تماماً عن صحة بيانات لوحة الترخيص والأحرف المدخلة.</li>
-                <li>يجب حجز الموعد بمدة كافية قبل انتهاء رخصة سير المركبة لتجنب المخالفات القانونية.</li>
-                <li>تكامل الربط البرمجي يعتمد على صحة توافر الاتصال الآمن مع المنظومات والروابط الخارجية المحددة عبر الـ iFrame.</li>
+                <li>المستفيد مسؤول تماماً عن صحة البيانات المدخلة الخاصة بالمركبة وبيانات الاتصال.</li>
+                <li>يجب حجز الموعد وتأكيده قبل انتهاء استمارة سير المركبة بمهلة كافية لتفادي أي مخالفات مرورية.</li>
+                <li>تكامل الربط البرمجي يعتمد على توافر الاتصال الآمن مع المنظومات والروابط الرسمية المخصصة لنظام الحجز الإلكتروني.</li>
               </ul>
             </div>
           </Modal>
