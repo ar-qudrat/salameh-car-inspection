@@ -140,6 +140,25 @@ export default function App() {
     runGeoCheck();
   }, []);
 
+  // Scroll to section hash when page settles
+  useEffect(() => {
+    if (!isGeoChecking && !isGeoBlocked) {
+      if (typeof window !== "undefined" && window.location.hash) {
+        const hash = window.location.hash;
+        setTimeout(() => {
+          try {
+            const element = document.querySelector(hash);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth" });
+            }
+          } catch (e) {
+            console.warn("Smooth scroll failed for query hash", hash, e);
+          }
+        }, 400);
+      }
+    }
+  }, [isGeoChecking, isGeoBlocked]);
+
   // Fallback default details in case Firebase is empty or unset
   const FALLBACK_URL = "https://example.com";
   const FALLBACK_PHONE = "+966 11 123 4567";
@@ -687,8 +706,10 @@ export default function App() {
           <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-650">
             <a href="#" className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الرئيسية" : "Home"}</a>
             <a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "عن المركز" : "About"}</a>
-            <a href="#stations" onClick={(e) => { e.preventDefault(); document.getElementById("stations")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "المراكز والخدمات" : "Services"}</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById("features")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "المميزات" : "Features"}</a>
+            <a href="#steps" onClick={(e) => { e.preventDefault(); document.getElementById("steps")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "خطوات الحجز" : "Steps"}</a>
             <a href="#faq" onClick={(e) => { e.preventDefault(); document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a>
+            <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "اتصل بنا" : "Contact"}</a>
           </nav>
 
           {/* Header Action Items */}
@@ -942,7 +963,7 @@ export default function App() {
       )}
 
           {/* Strengths & Platform Features Section Grid */}
-          <section id="stations" className="bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 border-y border-slate-100">
+          <section id="features" className="bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 border-y border-slate-100">
             <div className="max-w-7xl mx-auto">
               
               <div className="text-center mb-12">
@@ -980,7 +1001,7 @@ export default function App() {
           </section>
 
           {/* How it works section */}
-          <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <section id="steps" className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             
             <div className="text-center mb-12">
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -1074,7 +1095,7 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="md:col-span-6 space-y-4 text-right md:border-r border-slate-800 md:pr-8">
+              <div id="contact" className="md:col-span-6 space-y-4 text-right md:border-r border-slate-800 md:pr-8">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <Phone className="w-5 h-5 text-[#1E7D4E]" />
                   <span>{lang === "ar" ? "قنوات التواصل الرسمية" : "Official Contacts"}</span>
