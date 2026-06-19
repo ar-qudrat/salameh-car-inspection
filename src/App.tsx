@@ -1848,6 +1848,36 @@ function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreen
                 </div>
               </div>
 
+              {/* Direct Booking Alternate Backup Bar */}
+              <div id="iframe-backup-banner" className="bg-amber-50 border-b border-amber-150/60 p-3 shrink-0">
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-right" dir={isRtl ? "rtl" : "ltr"}>
+                  <div className="flex items-center gap-2 text-amber-800">
+                    <span className="flex h-2.5 w-2.5 relative shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-600"></span>
+                    </span>
+                    <p className="text-xs sm:text-sm font-semibold">
+                      {lang === "ar" 
+                        ? "تحميل احتياطي مباشر متاح لتفادي انقطاع الخدمة" 
+                        : "Direct backup routing channel active"}
+                    </p>
+                  </div>
+                  <a
+                    href={iframeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 text-xs font-extrabold text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 px-4 py-2 rounded-xl shadow-sm hover:shadow transition-all duration-150 border border-amber-700/10 cursor-pointer"
+                  >
+                    <span>
+                      {lang === "ar" 
+                        ? "إذا واجهت مشكلة في العرض، انقر هنا للحجز المباشر" 
+                        : "If you face an issue with the layout, click here for direct booking"}
+                    </span>
+                    <ExternalLink className="w-4 h-4 text-white" />
+                  </a>
+                </div>
+              </div>
+
               {/* Secure dynamic iframe loaded according to Admin configurations */}
               <div className="flex-1 bg-slate-100 relative min-h-[350px]">
                 <iframe
