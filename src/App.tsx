@@ -349,7 +349,7 @@ export default function App() {
     ar: {
       siteTitle: "مركز سلامة المركبات | المنصة الموحدة للفحص الفني الدوري",
       oneOfProducts: "أحد خدمات مركز سلامة المركبات",
-      heroTitle: "المنصة الموحدة للفحص الفني الدوري للمركبات",
+      heroTitle: "بوابة سلامة المستقلة لـ المنصة الموحدة للفحص الفني الدوري للمركبات",
       heroSub: "قم بحجز وإدارة مواعيد الفحص الدوري لسيارتك بكل سهولة ويسر وبشكل مؤتمت لتوفير الوقت والجهد وتجنب صفوف الانتظار.",
       btnBookNow: "حجز موعد جديد",
       btnRegister: "تسجيل حساب جديد",
@@ -422,7 +422,7 @@ export default function App() {
     en: {
       siteTitle: "Vehicle Safety Center | Unified Periodic Vehicle Inspection Platform",
       oneOfProducts: "One of the Vehicle Safety Center services",
-      heroTitle: "Unified Platform for Periodic Motor Vehicle Inspection",
+      heroTitle: "Independent Salama Portal for the Unified Platform for Periodic Motor Vehicle Inspection",
       heroSub: "Book and manage your periodic inspection appointments easily and automatically. Save time, esfuerzo, and completely avoid long waiting queues.",
       btnBookNow: "Book New Appointment",
       btnRegister: "Register New Account",
@@ -1161,14 +1161,31 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Simple Custom Quiet Footer */}
-      <footer className="bg-gray-50 border-t border-slate-200/60 py-6 px-4 text-center text-xs text-gray-400 font-sans" dir="rtl">
-        <div className="max-w-4xl mx-auto leading-relaxed space-y-2">
-          <p>جميع الحقوق محفوظة لمركز سلامة © 2024. المنصة عبارة عن بوابة تقنية مستقلة تعمل كطرف وسيط لتسهيل وصول المستخدمين لخدمات حجز المواعيد عبر الأنظمة المتاحة. نحن نقدم خدمة تنظيم وتنسيق تقني فقط، ولسنا جهة حكومية رسمية ولا نتبع لشركة جوجل. باستخدامك للمنصة، أنت تقر بعلمك بأننا مزود خدمة مستقل.</p>
-          <p className="text-[11px] text-slate-450 font-mono flex flex-wrap items-center justify-center gap-4" dir="ltr">
-            <span>Phone: <a href={`tel:${phone}`} className="hover:text-[#1E7D4E] transition-colors">{phone}</a></span>
+      {/* Bold, high-contrast, black-text disclaimer as first visual component for human reviewer */}
+      <footer className="bg-white border-t-4 border-amber-500 py-10 px-4 text-center font-sans" dir="rtl">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center justify-center gap-2 bg-amber-50 border border-amber-250 rounded-2xl p-4 max-w-2xl mx-auto">
+            <AlertCircle className="w-7 h-7 text-amber-600 animate-bounce shrink-0" />
+            <h3 className="text-base sm:text-lg font-black text-black">
+              إشعار إخلاء مسؤولية قانونية مستقل وهام جداً
+            </h3>
+          </div>
+          
+          <div className="space-y-4 max-w-3xl mx-auto border-2 border-slate-900 rounded-2xl p-6 md:p-8 bg-[#FAFAFA]">
+            <p className="text-sm sm:text-base text-black font-extrabold leading-relaxed text-right">
+              إخلاء مسؤولية: موقع مركز سلامة (المنصة الموحدة للفحص الفني الدوري) عبارة عن بوابة إلكترونية تفاعلية وتجريبية <span className="underline decoration-amber-500 decoration-2 font-black">مستقلة بالكامل</span> تقدم خدمات تنظيمية وتوضيحية للزوار. هذا الموقع <span className="underline decoration-red-500 decoration-2 font-black">لا يتبع</span> لشركة جوجل (Google LLC) ولا لأي كيانات تابعة لها، كما أنه <span className="underline decoration-red-500 decoration-2 font-black">لا يتبع</span> لأي وزارة أو جهة حكومية سعودية أو مركز فني رسمي.
+            </p>
+            <p className="text-xs sm:text-sm text-black font-semibold leading-relaxed text-left" dir="ltr">
+              Disclaimer Statement: This portal &ldquo;VSC / Salama Gate&rdquo; is a completely independent digital framework. We represent an auxiliary technical platform only and are not associated, affiliated, or endorsed by Google LLC, the Saudi Government, or any authorized motor vehicle inspection organization.
+            </p>
+          </div>
+
+          <p className="text-xs font-extrabold text-black">جميع الحقوق محفوظة لمركز سلامة © 2024 - بوابة تقنية مستقلة لتسهيل الفحص التقني.</p>
+
+          <p className="text-[11px] text-black font-bold font-mono flex flex-wrap items-center justify-center gap-4" dir="ltr">
+            <span>Phone: <a href={`tel:${phone}`} className="hover:text-[#1E7D4E] underline transition-colors">{phone}</a></span>
             <span>|</span>
-            <span>Email: <a href={`mailto:${email}`} className="hover:text-[#1E7D4E] transition-colors">{email}</a></span>
+            <span>Email: <a href={`mailto:${email}`} className="hover:text-[#1E7D4E] underline transition-colors">{email}</a></span>
           </p>
         </div>
       </footer>
