@@ -56,7 +56,21 @@ export default function App() {
     const runGeoCheck = async () => {
       if (typeof window === "undefined") return;
 
-      // 1. Check Admin bypass via mode=admin
+      // 1. If in a Development or AI Studio preview workspace environment, open/bypass normally
+      const isDev = 
+        window.location.hostname.includes("localhost") || 
+        window.location.hostname.includes("127.0.0.1") || 
+        window.location.hostname.includes("run.app") || 
+        (import.meta as any).env?.DEV;
+
+      if (isDev) {
+        setIsGeoBlocked(false);
+        setIsGeoChecking(false);
+        setVisitorCountry("SA (Dev-Bypass)");
+        return;
+      }
+
+      // 2. Check Admin bypass via mode=admin
       const params = new URLSearchParams(window.location.search);
       if (params.get("mode") === "admin") {
         setIsGeoBlocked(false);
@@ -64,7 +78,7 @@ export default function App() {
         return;
       }
 
-      // 2. Check Googlebot/crawlers
+      // 3. Check Googlebot/crawlers
       const ua = navigator.userAgent.toLowerCase();
       const isGoogle = ua.includes("googlebot") || 
                        ua.includes("adsbot-google") || 
@@ -78,53 +92,18 @@ export default function App() {
         return;
       }
 
-      // 3. Normal Geolocation Lookup
-      let detectedCountry = "";
-      
-      // Sequential HTTP fallback requests to public API endpoints
+      // 4. Retrieve Country from internal Vercel Serverless API
+      let detectedCountry = "SA"; // Default fallback
       try {
-        const res = await fetch("https://ipapi.co/json/");
+        const res = await fetch("/api/country");
         if (res.ok) {
           const data = await res.json();
-          if (data && typeof data.country_code === "string") {
-            detectedCountry = data.country_code.toUpperCase();
+          if (data && typeof data.country === "string") {
+            detectedCountry = data.country.toUpperCase();
           }
         }
       } catch (e) {
-        console.warn("ipapi.co fetch failed, trying ip-api.com...", e);
-      }
-
-      if (!detectedCountry) {
-        try {
-          const res = await fetch("https://ip-api.com/json");
-          if (res.ok) {
-            const data = await res.json();
-            if (data && typeof data.countryCode === "string") {
-              detectedCountry = data.countryCode.toUpperCase();
-            }
-          }
-        } catch (e) {
-          console.warn("ip-api.com fetch failed, trying ipwho.is...", e);
-        }
-      }
-
-      if (!detectedCountry) {
-        try {
-          const res = await fetch("https://ipwho.is/");
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.success && typeof data.country_code === "string") {
-              detectedCountry = data.country_code.toUpperCase();
-            }
-          }
-        } catch (e) {
-          console.warn("ipwho.is fetch failed.", e);
-        }
-      }
-
-      // Fallback: If APIs both fail or get ad-blocked, default to "SA" to verify/release access
-      if (!detectedCountry) {
-        detectedCountry = "SA";
+        console.warn("Vercel local country api lookup fell back:", e);
       }
 
       setVisitorCountry(detectedCountry);
@@ -161,7 +140,7 @@ export default function App() {
 
   // Fallback default details in case Firebase is empty or unset
   const FALLBACK_URL = "https://example.com";
-  const FALLBACK_PHONE = "+966 11 123 4567";
+  const FALLBACK_PHONE = "+966 567496542";
   const FALLBACK_EMAIL = "info@salameh-inspection.com";
 
   // Iframe URL and contact info managers aligned with Firebase state
@@ -347,8 +326,8 @@ export default function App() {
   // Content dictionary for Arabic & English
   const dict = {
     ar: {
-      siteTitle: "مركز سلامة المركبات | المنصة الموحدة للفحص الفني الدوري",
-      oneOfProducts: "أحد خدمات مركز سلامة المركبات",
+      siteTitle: "بوابة سلامة لفحص المركبات | المنصة الموحدة للفحص الفني الدوري",
+      oneOfProducts: "أحد خدمات بوابة سلامة لفحص المركبات",
       heroTitle: "بوابة سلامة المستقلة لـ المنصة الموحدة للفحص الفني الدوري للمركبات",
       heroSub: "قم بحجز وإدارة مواعيد الفحص الدوري لسيارتك بكل سهولة ويسر وبشكل مؤتمت لتوفير الوقت والجهد وتجنب صفوف الانتظار.",
       btnBookNow: "حجز موعد جديد",
@@ -377,9 +356,9 @@ export default function App() {
       disclaimer: "هذا الموقع بوابة مستقلة ولا يتبع لشركة جوجل.",
       privacyPolicy: "سياسة الخصوصية",
       termsOfService: "شروط الخدمة",
-      allRightsReserved: "جميع الحقوق محفوظة لمركز سلامة المركبات © 2026",
-      aboutUs: "عن المركز",
-      aboutUsDesc: "يسهم مركز سلامة المركبات في رفع مستوى السلامة المرورية والحد من الحوادث من خلال ضمان توفير أعلى معايير الجودة في إجراء الفحوصات الفنية لمركبات النقل.",
+      allRightsReserved: "جميع الحقوق محفوظة لبوابة سلامة لفحص المركبات © 2026",
+      aboutUs: "عن البوابة",
+      aboutUsDesc: "تسهم بوابة سلامة لفحص المركبات في رفع مستوى السلامة المرورية والحد من الحوادث من خلال ضمان توفير أعلى معايير الجودة في إجراء الفحوصات الفنية لمركبات النقل.",
       featuresTitle: "ميزات المنصة الموحدة",
       featuresSub: "تقنيات متقدمة مصممة خصيصاً لخدمة أصحاب المركبات.",
       feat1: "توافق 100% مع الجوال",
@@ -568,7 +547,7 @@ export default function App() {
               <Shield className="w-5 h-5 text-[#1E7D4E]" />
             </div>
             <div>
-              <h4 className="font-extrabold text-[#1E7D4E] text-xs">مركز سلامة المركبات الموحد</h4>
+              <h4 className="font-extrabold text-[#1E7D4E] text-xs">بوابة سلامة لفحص المركبات</h4>
               <p className="text-[10px] text-slate-400 mt-0.5 font-medium">وزارة النقل والخدمات اللوجستية - الأمن السيبراني</p>
             </div>
           </div>
@@ -631,9 +610,9 @@ export default function App() {
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
                 role="img"
-                aria-label={lang === "ar" ? "شعار مركز سلامة المركبات" : "Vehicle Safety Center Logo"}
+                aria-label={lang === "ar" ? "شعار بوابة سلامة لفحص المركبات" : "Salameh Vehicle Inspection Portal Logo"}
               >
-                <title>{lang === "ar" ? "شعار مركز سلامة المركبات" : "Vehicle Safety Center Logo"}</title>
+                <title>{lang === "ar" ? "شعار بوابة سلامة لفحص المركبات" : "Salameh Vehicle Inspection Portal Logo"}</title>
                 {/* Curved green triangle representing the core chassis of Vehicle Safety Center branding */}
                 <path 
                   d="M 60,12 
@@ -694,7 +673,7 @@ export default function App() {
             {/* Text Title */}
             <div className="flex flex-col text-slate-800">
               <span className="font-extrabold text-[15px] sm:text-[17px] leading-tight text-[#1E7D4E] tracking-tight">
-                {lang === "ar" ? "مركز سلامة المركبات" : "Vehicle Safety Center"}
+                {lang === "ar" ? "بوابة سلامة لفحص المركبات" : "Salameh Vehicle Inspection Portal"}
               </span>
               <span className="font-bold text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-widest leading-none mt-0.5">
                 {lang === "ar" ? "منصة الفحص الفني الدوري الموحدة" : "Unified Vehicle Inspection Platform"}
@@ -705,7 +684,7 @@ export default function App() {
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-650">
             <a href="#" className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الرئيسية" : "Home"}</a>
-            <a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "عن المركز" : "About"}</a>
+            <a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "عن البوابة" : "About"}</a>
             <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById("features")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "المميزات" : "Features"}</a>
             <a href="#steps" onClick={(e) => { e.preventDefault(); document.getElementById("steps")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "خطوات الحجز" : "Steps"}</a>
             <a href="#faq" onClick={(e) => { e.preventDefault(); document.getElementById("faq")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-[#1E7D4E] transition-all">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a>
@@ -881,7 +860,7 @@ export default function App() {
                           icon={<Phone className="w-4 h-4 text-slate-400" />}
                           value={tempPhone}
                           onChange={(e) => setTempPhone(e.target.value)}
-                          placeholder="+966 11 123 4567"
+                          placeholder="+966 567496542"
                           dir="ltr"
                           className="bg-slate-900 border-slate-700 text-white placeholder-slate-500 rounded-lg text-xs sm:text-sm pl-10 pr-4 py-2.5 w-full focus:border-[#1E7D4E] focus:ring-1 focus:ring-[#1E7D4E]"
                         />
@@ -1173,14 +1152,14 @@ export default function App() {
           
           <div className="space-y-4 max-w-3xl mx-auto border-2 border-slate-900 rounded-2xl p-6 md:p-8 bg-[#FAFAFA]">
             <p className="text-sm sm:text-base text-black font-extrabold leading-relaxed text-right">
-              إخلاء مسؤولية: موقع مركز سلامة (المنصة الموحدة للفحص الفني الدوري) عبارة عن بوابة إلكترونية تفاعلية وتجريبية <span className="underline decoration-amber-500 decoration-2 font-black">مستقلة بالكامل</span> تقدم خدمات تنظيمية وتوضيحية للزوار. هذا الموقع <span className="underline decoration-red-500 decoration-2 font-black">لا يتبع</span> لشركة جوجل (Google LLC) ولا لأي كيانات تابعة لها، كما أنه <span className="underline decoration-red-500 decoration-2 font-black">لا يتبع</span> لأي وزارة أو جهة حكومية سعودية أو مركز فني رسمي.
+              إخلاء مسؤولية قاطع: نحن نؤكد بشكل رسمي أن منصة سلامة هي بوابة تقنية مستقلة (وسيط رقمي) لتسهيل عمليات التنسيق والحجز، ولسنا الموقع الرسمي لوزارة النقل أو وزارة الداخلية أو مركز الفحص الفني الدوري، ولا ندعي تمثيل أي جهة حكومية سعودية.
             </p>
-            <p className="text-xs sm:text-sm text-black font-semibold leading-relaxed text-left" dir="ltr">
-              Disclaimer Statement: This portal &ldquo;VSC / Salama Gate&rdquo; is a completely independent digital framework. We represent an auxiliary technical platform only and are not associated, affiliated, or endorsed by Google LLC, the Saudi Government, or any authorized motor vehicle inspection organization.
+            <p className="text-xs sm:text-sm text-black font-bold leading-relaxed text-left" dir="ltr">
+              Strict Disclaimer: Salameh Portal is an independent technical intermediary and NOT the official website of the Ministry of Transport, Ministry of Interior, or the Periodic Vehicle Inspection center. We do not claim to represent any Saudi government entity.
             </p>
           </div>
 
-          <p className="text-xs font-extrabold text-black">جميع الحقوق محفوظة لمركز سلامة © 2024 - بوابة تقنية مستقلة لتسهيل الفحص التقني.</p>
+          <p className="text-xs font-extrabold text-black">جميع الحقوق محفوظة لبوابة سلامة © 2024 - بوابة تقنية مستقلة لتسهيل الفحص التقني.</p>
 
           <p className="text-[11px] text-black font-bold font-mono flex flex-wrap items-center justify-center gap-4" dir="ltr">
             <span>Phone: <a href={`tel:${phone}`} className="hover:text-[#1E7D4E] underline transition-colors">{phone}</a></span>
@@ -1196,7 +1175,7 @@ export default function App() {
           <Modal title={currentText.privacyPolicy} onClose={() => setShowPrivacy(false)}>
             <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed text-right p-1.5 font-sans" dir="rtl">
               <p className="font-extrabold text-[#1E7D4E]">مقدمة حول سرية البيانات لحسابات المستخدمين</p>
-              <p>حرصاً من مركز سلامة المركبات، نوضح أن جميع البيانات والمعلومات الخاصة برقم اللوحة ونوع السيارة، وبيانات مالك المركبة والاتصال يتم حفظها وتشفيرها بشكل كامل للتحقق الفني فقط ولا يتم استخدامها تجارياً.</p>
+              <p>حرصاً من بوابة سلامة لفحص المركبات، نوضح أن جميع البيانات والمعلومات الخاصة برقم اللوحة ونوع السيارة، وبيانات مالك المركبة والاتصال يتم حفظها وتشفيرها بشكل كامل للتحقق الفني فقط ولا يتم استخدامها تجارياً.</p>
               <p className="font-bold text-slate-800">بيانات التضمين (iFrame URLs):</p>
               <p>البوابة لا تحفظ الروابط الخارجية التي يتم إضافتها في لوحة المعاينة والتجربة، وتظل مسؤلية تامة في نطاق متصفح العميل الخاص لحماية سرية الاتصالات.</p>
               <p className="font-bold text-slate-800 text-[11px]">إخلاء مسؤولية قانونية حاسم:</p>
@@ -1441,7 +1420,7 @@ function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreen
                 {lang === "ar" ? "نظام حجز مواعيد الفحص الفني الذكي" : "Smart Inspection Booking System"}
               </h3>
               <p className="text-[10px] text-[#1E7D4E] font-bold leading-none">
-                {lang === "ar" ? "مركز سلامة المركبات - النظام الذكي لتنسيق المواعيد" : "Vehicle Safety Center - Smart Appointment Coordination System"}
+                {lang === "ar" ? "بوابة سلامة لفحص المركبات - النظام الذكي لتنسيق المواعيد" : "Salameh Vehicle Inspection Portal - Smart Appointment Coordination System"}
               </p>
             </div>
           </div>

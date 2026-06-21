@@ -1,6 +1,6 @@
 {
-  "name": "Vehicle Safety Center",
-  "description": "المنصة الموحدة للفحص الفني الدوري للمركبات - مركز سلامة المركبات",
+  "name": "Salameh Vehicle Inspection Portal",
+  "description": "المنصة الموحدة للفحص الفني الدوري للمركبات - بوابة سلامة لفحص المركبات",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
