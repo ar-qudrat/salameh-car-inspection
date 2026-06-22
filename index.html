@@ -4,6 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>بوابة سلامة لفحص المركبات | المنصة الموحدة للفحص الفني الدوري</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18252941872"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-18252941872');
+
+      function gtag_report_conversion(url) {
+        var callback = function () {
+          if (typeof(url) != 'undefined') {
+            // window.location = url; // معطلة لكي لا يعيد التوجيه ويسمح بفتح الـ iframe أو النافذة الجديدة
+          }
+        };
+        gtag('event', 'conversion', {
+            'send_to': 'AW-18252941872/QTN1CJ2So8McELCU1_9D',
+            'event_callback': callback
+        });
+        return false;
+      }
+      window.gtag_report_conversion = gtag_report_conversion;
+    </script>
     <!-- Non-official neutral independent icon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Preconnect for faster resource loading -->

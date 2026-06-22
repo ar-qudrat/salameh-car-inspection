@@ -1132,40 +1132,22 @@ export default function App() {
             </button>
           </div>
 
+          <div className="border-t border-slate-900/55 pt-6 max-w-4xl mx-auto text-right space-y-2.5 font-sans">
+            <p className="text-[10px] sm:text-xs text-slate-500 font-medium leading-relaxed">
+              <span className="font-bold text-slate-400">ملاحظة قانونية: </span>
+              نحن نؤكد بشكل رسمي أن منصة سلامة هي بوابة تقنية مستقلة (وسيط رقمي) لتسهيل عمليات التنسيق والحجز، ولسنا الموقع الرسمي لوزارة النقل أو وزارة الداخلية أو مركز الفحص الفني الدوري، ولا ندعي تمثيل أي جهة حكومية سعودية.
+            </p>
+            <p className="text-[10px] sm:text-xs text-slate-500 font-medium leading-relaxed text-left" dir="ltr">
+              <span className="font-bold text-slate-400">Legal Note: </span>
+              Salameh Portal is an independent technical intermediary and NOT the official website of the Ministry of Transport, Ministry of Interior, or the Periodic Vehicle Inspection center. We do not claim to represent any Saudi government entity.
+            </p>
+          </div>
+
           <div className="border-t border-slate-900/55 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] sm:text-xs text-slate-500">
             <p>{currentText.allRightsReserved}</p>
             <p>{lang === "ar" ? "بوابة رقمية مستقلة" : "Independent Digital Dashboard"}</p>
           </div>
 
-        </div>
-      </footer>
-
-      {/* Bold, high-contrast, black-text disclaimer as first visual component for human reviewer */}
-      <footer className="bg-white border-t-4 border-amber-500 py-10 px-4 text-center font-sans" dir="rtl">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex items-center justify-center gap-2 bg-amber-50 border border-amber-250 rounded-2xl p-4 max-w-2xl mx-auto">
-            <AlertCircle className="w-7 h-7 text-amber-600 animate-bounce shrink-0" />
-            <h3 className="text-base sm:text-lg font-black text-black">
-              إشعار إخلاء مسؤولية قانونية مستقل وهام جداً
-            </h3>
-          </div>
-          
-          <div className="space-y-4 max-w-3xl mx-auto border-2 border-slate-900 rounded-2xl p-6 md:p-8 bg-[#FAFAFA]">
-            <p className="text-sm sm:text-base text-black font-extrabold leading-relaxed text-right">
-              إخلاء مسؤولية قاطع: نحن نؤكد بشكل رسمي أن منصة سلامة هي بوابة تقنية مستقلة (وسيط رقمي) لتسهيل عمليات التنسيق والحجز، ولسنا الموقع الرسمي لوزارة النقل أو وزارة الداخلية أو مركز الفحص الفني الدوري، ولا ندعي تمثيل أي جهة حكومية سعودية.
-            </p>
-            <p className="text-xs sm:text-sm text-black font-bold leading-relaxed text-left" dir="ltr">
-              Strict Disclaimer: Salameh Portal is an independent technical intermediary and NOT the official website of the Ministry of Transport, Ministry of Interior, or the Periodic Vehicle Inspection center. We do not claim to represent any Saudi government entity.
-            </p>
-          </div>
-
-          <p className="text-xs font-extrabold text-black">جميع الحقوق محفوظة لبوابة سلامة © 2024 - بوابة تقنية مستقلة لتسهيل الفحص التقني.</p>
-
-          <p className="text-[11px] text-black font-bold font-mono flex flex-wrap items-center justify-center gap-4" dir="ltr">
-            <span>Phone: <a href={`tel:${phone}`} className="hover:text-[#1E7D4E] underline transition-colors">{phone}</a></span>
-            <span>|</span>
-            <span>Email: <a href={`mailto:${email}`} className="hover:text-[#1E7D4E] underline transition-colors">{email}</a></span>
-          </p>
         </div>
       </footer>
 
@@ -1343,6 +1325,19 @@ function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreen
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loadingStepText, setLoadingStepText] = useState<string>("");
   const [loadingPercentage, setLoadingPercentage] = useState<number>(0);
+
+  // Trigger Google Ads conversion tracking once when reaching Step 5
+  useEffect(() => {
+    if (step === 5) {
+      if (typeof (window as any).gtag_report_conversion === "function") {
+        try {
+          (window as any).gtag_report_conversion();
+        } catch (err) {
+          console.warn("Could not fire Google conversion tracking on Step 5 auto-trigger:", err);
+        }
+      }
+    }
+  }, [step]);
 
   // Handle step 4 loading simulation sequence
   useEffect(() => {
@@ -1862,6 +1857,15 @@ function FullScreenBookingModal({ isOpen, onClose, iframeUrl, lang }: FullScreen
                     href={iframeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      if (typeof (window as any).gtag_report_conversion === "function") {
+                        try {
+                          (window as any).gtag_report_conversion(iframeUrl);
+                        } catch (err) {
+                          console.warn("Could not fire Google conversion tracking from orange fallback button:", err);
+                        }
+                      }
+                    }}
                     className="w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 text-xs font-extrabold text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 px-4 py-2 rounded-xl shadow-sm hover:shadow transition-all duration-150 border border-amber-700/10 cursor-pointer"
                   >
                     <span>
